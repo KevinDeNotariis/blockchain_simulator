@@ -1,0 +1,8 @@
+<% transactions.map(transaction =>{ %>
+<tr>
+  <td><%= transaction.id %></td>
+  <td><%= transaction.sender %></td>
+  <td><%= transaction.receiver %></td>
+  <td><%= transaction.amount %></td>
+</tr>
+<% }) %>

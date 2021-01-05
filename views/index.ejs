@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <% if(typeof style !== 'undefined'){%>
+    <link rel="stylesheet" href="/css/<%= style %>.css" />
+    <% } %>
+    <title><%= title %></title>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <div class="blockchain">
+      <% for(i in blocks){%> <%- include('./components/block') %> <% }
+      %>
+    </div>
+
+    <div class="transactions">
+      <table>
+        <h1>Transactions</h1>
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Sender</th>
+            <th scope="col">Recepient</th>
+            <th scope="col">Amount</th>
+          </tr>
+          <tbody>
+            <%- include('./components/transaction') %>
+          </tbody>
+        </thead>
+      </table>
+    </div>
+    <script language="javascript" src="/js/jquery.js"></script>
+    <% if(typeof script !== 'undefined') { %>
+      <script language="javascript" src="/js/<%= script %>.js"></script>
+      <% } %>
+  </body>
+</html>

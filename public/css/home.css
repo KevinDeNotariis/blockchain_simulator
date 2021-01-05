@@ -1,0 +1,96 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+}
+
+.blockchain {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-gap: 30px;
+}
+
+.block-container {
+  border: 2px solid #333;
+  display: inline-grid;
+  grid-template-rows: 0.5fr 3fr;
+}
+
+.block-item {
+  margin: 5px;
+  padding: 2px;
+  border: 1px solid red;
+}
+
+.block-entry {
+  display: flex;
+  width: 300px;
+}
+
+.block-entry > * + * {
+  margin-left: 10px;
+}
+
+.block-entry-tx {
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  gap: 0px 10px;
+  margin-block-start: 10px;
+  margin-block-end: 10px;
+}
+
+.block-tx-label {
+  margin-block: 0px;
+  font-weight: bold;
+}
+
+.block-tx-value {
+  margin-block: 0px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.block-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.block-label {
+  font-weight: bold;
+}
+
+.block-entry-btn {
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.btn-mine,
+.btn-mine-onwards {
+  flex: 0 0 120px;
+  min-height: 30px;
+
+  background-color: rgb(231, 229, 178);
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  transition: 0.3s;
+}
+
+.btn-mine:hover,
+.btn-mine-onwards:hover {
+  font-size: medium;
+  color: white;
+  background-color: rgb(142, 138, 28);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/*-----------------------------------*/
+/*-----------TRANSACTIONS------------*/
+/*-----------------------------------*/
+
+.transactions {
+  font-family: "Courier New", Courier, monospace;
+}

@@ -1,0 +1,39 @@
+<div class="block-container">
+  <div class="block-item block-container-id">
+    <div class="block-entry">
+      <p class="block-label">Block ID:</p>
+      <p class="block-value block-id-value"><%= blocks[i].id %></p>
+    </div>
+  </div>
+  <div class="block-item block-container-body">
+    <div class="block-entry-tx block-entry-tx">
+      <% for(j in blocks[i].transactions){ if(j == 0){%>
+      <p class="block-tx-label">Transactions:</p>
+      <% } else {%>
+      <p class="block-tx-label"></p>
+      <% } %>
+      <p class="block-tx-value"><%= blocks[i].transactions[j].id %></p>
+      <% } %>
+    </div>
+    <div class="block-entry">
+      <p class="block-label">Previous Hash:</p>
+      <p class="block-value block-prev-hash-value">
+        <%= blocks[i].previous_hash %>
+      </p>
+    </div>
+    <div class="block-entry">
+      <p class="block-label">Nonce:</p>
+      <p class="block-value block-nonce-value"><%= blocks[i].nonce %></p>
+    </div>
+    <div class="block-entry">
+      <p class="block-label">Hash:</p>
+      <p class="block-value block-hash-value"><%= blocks[i].hash %></p>
+    </div>
+    <div class="block-entry block-entry-btn">
+      <button class="btn-mine">Mine</button>
+    </div>
+    <div class="block-entry block-entry-btn">
+      <button class="btn-mine-onwards">Mine onwards</button>
+    </div>
+  </div>
+</div>
