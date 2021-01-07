@@ -4,7 +4,15 @@
 
 - Enter the folder;
 
-- Type
+- Type in the console:
+  
+  ```
+  npm i
+  ```
+  
+  to install the dependencies;
+
+- Type in the console
 
   ```
   npm run dev
