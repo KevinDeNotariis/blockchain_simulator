@@ -1,72 +1,69 @@
-const { Block, Transaction } = require("../Block");
-const fs = require("fs");
+const qs = require("qs");
 
-const fetchTransactions = () => {
-  return JSON.parse(fs.readFileSync("transactions.json"));
+const mongoose = require("mongoose");
+
+const Hash = mongoose.model("Hash");
+const Block = mongoose.model("Block");
+
+const mine_block = (req, res, next) => {
+  const block = new Block(req.body);
+
+  block.mine_block();
+
+  req.body.nonce = block.nonce;
+
+  next();
 };
 
-const fetchBlocks = () => {
-  return JSON.parse(fs.readFileSync("blockchain.json"));
+const create_block = (req, res, next) => {
+  req.body = {
+    id: req.app.locals.max_id + 1,
+    previous_hash: req.app.locals.previous_hash,
+    transactions: req.body.transactions,
+  };
+  next();
 };
 
-const hash_block = (req, res) => {
-  let transactions = constructTransactions(req.query.transactions_id);
+const is_valid = async (req, res, next) => {
+  const block = new Block(req.body);
+  console.log("INSIDE is_valid, CHECKING VALIDITY OF A BLOCK");
+  console.log("  block we are inspecting:");
+  console.log(block);
 
-  transactions.map((elem) => console.log(elem));
+  // check if the hash satisfies the difficulty
+  console.log("  - checking whether the block satisfy the diffulty");
+  if (block.hash() >= block.target)
+    return res
+      .status(400)
+      .json({ message: "Block do not satisfy the difficulty" });
 
-  let block = new Block(req.query.id, req.query.previous_hash, transactions);
-  block.nonce = req.query.nonce;
+  console.log("    difficulty okay.");
+  console.log("  - checking whether the previous_hash is in the blockchain");
+  // check if the previous_hash corresponds to a block in the local blockchain
+  // by checking whether this hash is in the HashSchema
+  await Hash.find({ block_hash: block.previous_hash }, (err, hash) => {
+    if (err) return res.status(401).json({ message: err });
 
-  block.hash_block(block.target);
-
-  return res.status(200).json({ hash: block.hash });
-};
-
-const mine_block = (req, res) => {
-  console.log("INSIDE THE MIDDLEWARE HANDLING THE MINE OF A BLOCK");
-  console.log("  Retrieving the Transactions from their IDs:");
-  req.query.transactions_id.map((elem) => {
-    console.log("   " + elem);
+    if (!hash)
+      return res.status(400).json({ message: "Previous Block not found" });
   });
-  let transactions = constructTransactions(req.query.transactions_id);
+  console.log("    previous block found.");
 
-  console.log("  Obtained the transactions");
-  console.log("  Approaching to mine the block");
-
-  let block = new Block(req.query.id, req.query.previous_hash, transactions);
-
-  block.mine_block(block.target);
-
-  return res.status(200).json({ hash: block.hash, nonce: block.nonce });
-};
-
-const constructTransactions = (transactions_id) => {
-  console.log(
-    "INSIDE THE FUNCTION WHICH FETCH THE TRANSACTIONS FROM THEIR IDS"
-  );
-  let ret = [];
-  let total_transactions = fetchTransactions();
-
-  for (transaction_id in transactions_id) {
-    for (tr in total_transactions) {
-      if (total_transactions[tr].id == transactions_id[transaction_id]) {
-        let new_tr = new Transaction(
-          total_transactions[tr].sender,
-          total_transactions[tr].receiver,
-          total_transactions[tr].amount
-        );
-        new_tr.id = total_transactions[tr].id;
-        ret.push(new_tr);
-        break;
-      }
+  console.log("  - checking whether the transactions are valid");
+  // check whether the transactions are valid
+  block.transactions.map((tx) => {
+    if (!tx.verify()) {
+      return res.status(400).json({ message: "Transactions not valid" });
     }
-  }
-  return ret;
+  });
+  console.log("    transactions are valid.");
+
+  console.log("  - exiting is_valid middleware.");
+  next();
 };
 
 module.exports = {
-  fetchTransactions,
-  fetchBlocks,
+  create_block,
   mine_block,
-  hash_block,
+  is_valid,
 };

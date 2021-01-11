@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 
 const mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost/blockchainDB", {
+mongoose.connect("mongodb://localhost/blockchainDB2", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -40,9 +40,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/", routes());
 
-app.listen(3000, () => {
+app.listen(3001, () => {
   config();
-  console.log("Server listening on port 3000");
+  console.log("Server listening on port 3001");
 });
 
 const config = () => {
@@ -54,7 +54,7 @@ const config = () => {
   // prettier-ignore
   /**/ Block.find((err, blocks) => {
   /**/   if (err) console.log("ERRORS IN RETRIEVING BLOCKS");
-  /**/   if (!blocks) {
+  /**/   if (blocks.length === 0) {
   /**/     console.log("STILL NO BLOCKS HERE")
   /**/   } else {
   /**/     app.locals.max_id = blocks.reduce((a, b) => {

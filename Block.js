@@ -1,17 +1,4 @@
 const sha256 = require("crypto-js/sha256");
-const crypto = require("crypto");
-
-class Transaction {
-  constructor(sender, receiver, amount) {
-    this.id = crypto.randomBytes(32).toString("hex");
-    this.sender = sender;
-    this.receiver = receiver;
-    this.amount = amount;
-  }
-  serialize() {
-    return String(this.id) + this.sender + this.receiver + String(this.amount);
-  }
-}
 
 class Block {
   constructor(id, previous_hash, transactions) {
@@ -61,18 +48,5 @@ class Block {
     console.log(" - With nonce: " + this.nonce);
   }
 }
-/*
-let transaction = new Transaction("Kev", "Gio", 30);
-let transaction2 = new Transaction("Kev", "Teo", 50);
 
-let block = new Block(1, sha256("Hello world").toString(), [
-  transaction,
-  transaction2,
-]);
-
-block.mine_block(block.target);
-
-console.log(block.hash);
-console.log(block.nonce);*/
-
-module.exports = { Block, Transaction };
+module.exports = { Block };

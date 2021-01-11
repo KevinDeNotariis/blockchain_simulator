@@ -1,18 +1,14 @@
 const express = require("express");
 
-const {
-  hash_block,
-  mine_block,
-  fetchTransactions,
-  fetchBlocks,
-} = require("../controllers/blockController");
+const nodeRoute = require("./node");
+const transactionRoute = require("./transaction");
+const blockRoute = require("./block");
+const blockchainRoute = require("./blockchain");
+const userRoute = require("./user");
 
 const router = express.Router();
 
 module.exports = () => {
-  const transactions = fetchTransactions();
-  const blocks = fetchBlocks();
-
   router.get("/", (req, res) => {
     return res.render("index", {
       title: "Blockchain",
@@ -23,8 +19,11 @@ module.exports = () => {
     });
   });
 
-  router.get("/mine_block", mine_block);
-  router.get("/hash_block", hash_block);
+  router.use("/node", nodeRoute());
+  router.use("/transaction", transactionRoute());
+  router.use("/block", blockRoute());
+  router.use("/blockchain", blockchainRoute());
+  router.use("/user", userRoute());
 
   return router;
 };

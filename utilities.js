@@ -1,3 +1,4 @@
+/*
 const { Transaction, Block } = require("./Block");
 const fs = require("fs");
 
@@ -34,6 +35,4 @@ const generate_blocks = () => {
 
   fs.writeFileSync("blocks.json", str, "utf-8");
 };
-
-generate_transactions();
-generate_blocks();
+*/
