@@ -97,7 +97,7 @@ Now that everything is set, you can mine a block in the blockchain. What you hav
 
 1. Once mined, the bock will be added to the blockchain, namely to the `blocks` collection of the `blockchainDB` database.
 
-1. The block will be propagated to the other peers, in this case to the other two nodes, namely to `http://localhost:3001` and ``http://localhost:3001`.
+1. The block will be propagated to the other peers, in this case to the other two nodes, namely to `http://localhost:3001` and `http://localhost:3002`.
 
 1. The receiving nodes, upon receving the Block, will validate it:
    1. Does this node already have the block?
