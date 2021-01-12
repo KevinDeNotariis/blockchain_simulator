@@ -1,8 +1,12 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
+const qs = require("qs");
+
+const { propagate_to_peers } = require("../utilities/functions");
 
 const Transaction = mongoose.model("Transaction");
 const User = mongoose.model("User");
+const Peer = mongoose.model("Peer");
 
 const add_bunch_of_transactions = async (req, res) => {
   let transaction;
@@ -51,62 +55,106 @@ const add_bunch_of_transactions = async (req, res) => {
   return res.status(200).send("Transaction added");
 };
 
-//------ add_transaction -------------
-/*
-  inputs:
-      sender
-      receiver
-      amount
-      private_key of the sender to sign transaction
+const get_transactions = async (req, res) => {
+  const transactions = await Transaction.find({});
 
-  outout:
-      transaction just registered 
-*/
+  return res.status(200).json(transactions);
+};
 
-const add_transaction = (req, res) => {
+const save_transaction = async (req, res, next) => {
+  console.log(
+    "\n\nINSIDE save_transaction, ATTEMPTING TO SAVE THE TRANSACTION INTO DB"
+  );
   const transaction = new Transaction({
-    id: crypto.randomBytes(32).toString("hex"),
+    id: req.body.id,
     sender: req.body.sender,
     receiver: req.body.receiver,
     amount: req.body.amount,
+    signature: req.body.signature,
+    hash: req.body.hash,
   });
 
-  transaction.sign(req.body.private_key);
+  let tx = await transaction.save();
+  console.log("  - transaction saved successfully");
 
-  transaction.save((err, tx) => {
-    if (err) return res.status(401).json({ message: err });
-
-    return res.status(200).json(tx);
-  });
+  next();
 };
 
-// ---------- validate_transaction ---------------
-/*
-    API endpoint to check whether a transaction is valid.
-    
-    input:
-     transaction
-
-    output:
-     true / false
-*/
-
-const validate_transaction = (req, res) => {
-  const transaction = new Transaction(
-    req.body.id,
-    req.body.sender,
-    req.body.receiver,
-    req.body.amount
+const validate_transaction = async (req, res, next) => {
+  //Info printing
+  console.log(
+    "\n\nINSIDE validate_transaction, RECEIVED THE FOLLOWING TRANSACTION:"
   );
-  console.log(transaction);
+  console.log(req.body);
+  console.log("  - validation of the transaction");
+  console.log("  - checking whether this node has already the transaction");
 
-  transaction.signature = req.body.signature;
+  //First check whether the node has already the transaction
+  let tx = await Transaction.findOne({
+    id: req.body.id,
+  });
+  if (tx) {
+    console.log("Already got that transaction");
+    return res.status(400).json({ message: "Already got that transaction" });
+  }
+  console.log("  the node do not have the transaction.");
 
-  return res.status(200).json({ result: transaction.verify() });
+  const transaction = new Transaction({
+    id: req.body.id,
+    sender: req.body.sender,
+    receiver: req.body.receiver,
+    amount: req.body.amount,
+    signature: req.body.signature,
+    hash: req.body.hash,
+  });
+
+  console.log("  - checking the validity of the signature in the transaction");
+
+  if (!transaction.verify())
+    return res.status(400).json({ message: "Transaction not valid" });
+
+  console.log("    signature valid.");
+  console.log("exiting the function");
+
+  req.body = transaction;
+
+  next();
+};
+
+const propagate_transaction = async (req, res) => {
+  console.log(
+    "\n\nINSIDE propagate_transaction, ATTEMPTING TO SEND TRANSACTION TO PEERS"
+  );
+
+  console.log("  - searching for the peers");
+  let peers = await Peer.find({});
+  if (peers.length === 0) {
+    return res.status(400).json({ message: "No peers found" });
+  }
+
+  console.log("  - found the following peers:");
+  console.log(peers);
+
+  console.log("  - sending transaction to the peers");
+
+  const post_data = qs.stringify(JSON.parse(JSON.stringify(req.body)));
+
+  const return_str = propagate_to_peers(
+    peers,
+    post_data,
+    "/transaction/accept_transaction",
+    "POST"
+  );
+
+  console.log("  - transaction sent.");
+
+  return res.status(200).send(return_str);
 };
 
 module.exports = {
-  add_transaction,
   validate_transaction,
+  save_transaction,
   add_bunch_of_transactions,
+  propagate_transaction,
+  get_transactions,
 };

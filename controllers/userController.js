@@ -1,11 +1,13 @@
 const sha256 = require("crypto-js/sha256");
 const randomWords = require("random-words");
+const crypto = require("crypto");
 const mongoose = require("mongoose");
 
 const EdDSA = require("elliptic").eddsa;
 const ec = new EdDSA("ed25519");
 
 const User = mongoose.model("User");
+const Transaction = mongoose.model("Transaction");
 
 const add_bunch_of_users = (req, res) => {
   let user;
@@ -69,4 +71,40 @@ const generate_keys = (req, res) => {
     private_key: private_key,
   });
 };
-module.exports = { generate_keys, add_bunch_of_users };
+
+const generate_transaction = async (req, res, next) => {
+  console.log(
+    "\n\nINSIDE generate_transaction, ATTEMPTING TO GENERATE THE REQUESTED TRANSACTION"
+  );
+  const transaction = new Transaction({
+    id: crypto.randomBytes(32).toString("hex"),
+    sender: req.body.sender,
+    receiver: req.body.receiver,
+    amount: req.body.amount,
+  });
+
+  console.log("  - generated the following transaction:");
+  console.log(transaction);
+
+  console.log(
+    "  - recovering the private key from the users collection for the sender"
+  );
+  let user = await User.findOne({ public_key: req.body.sender });
+  if (!user) return res.json(400).json({ message: "User not found" });
+
+  console.log("  - private key recovered");
+  transaction.sign(user.private_key);
+
+  req.body = transaction;
+
+  console.log("  - final transaction sent to save_transaction");
+  console.log(transaction);
+
+  next();
+};
+
+module.exports = {
+  generate_keys,
+  add_bunch_of_users,
+  generate_transaction,
+};

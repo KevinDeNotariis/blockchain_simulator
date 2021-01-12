@@ -4,10 +4,12 @@ const {
   add_node,
   create_txs_pool,
   propagate_block,
+  get_peers,
+  discover_peers,
 } = require("../../controllers/nodeController");
 
 const {
-  is_valid,
+  checks,
   mine_block,
   create_block,
 } = require("../../controllers/blockController");
@@ -28,9 +30,11 @@ module.exports = () => {
     propagate_block
   );
 
-  router.post("/accept_block", is_valid, add_block, (req, res) => {
-    return res.status(200).json({ message: "We got it" });
-  });
+  router.post("/accept_block", checks, add_block, propagate_block);
+
+  router.get("/get_peers", get_peers);
+
+  router.get("/discover_peers", discover_peers);
 
   return router;
 };

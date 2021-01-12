@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "dev2": "nodemon server2.js"
+    "dev2": "nodemon server2.js",
+    "dev3": "nodemon server3.js"
   },
   "author": "Kevin De Notariis",
   "license": "ISC",

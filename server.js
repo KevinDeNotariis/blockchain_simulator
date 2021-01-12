@@ -20,6 +20,8 @@ const UserSchema = require("./models/userModel");
 const User = mongoose.model("User", UserSchema);
 const HashSchema = require("./models/hashModel");
 const Hash = mongoose.model("Hash", HashSchema);
+const PeerSchema = require("./models/peerModel");
+const Peer = mongoose.model("Peer", PeerSchema);
 
 const routes = require("./routes");
 const app = express();
@@ -46,28 +48,29 @@ app.listen(3000, () => {
 });
 
 const config = () => {
-  // prettier-ignore
+  //set the global variable port
+  app.locals.port = 3000;
+
   // Recover the max_id and previous_hash from db
-  /**/ console.log("- Recovering max_id and previous_hash from local blockchain")
-  /**/ app.locals.max_id;
-  /**/ app.locals.previous_hash;
-  // prettier-ignore
-  /**/ Block.find((err, blocks) => {
-  /**/   if (err) console.log("ERRORS IN RETRIEVING BLOCKS");
-  /**/   if (!blocks) {
-  /**/     console.log("STILL NO BLOCKS HERE")
-  /**/   } else {
-  /**/     app.locals.max_id = blocks.reduce((a, b) => {
-  /**/                                  return Math.max(a.id, b.id)===a.id?a:b;
-  /**/                                }).id;
-  /**/     Block.findOne({ id: app.locals.max_id }, (err, block) => {
-  /**/       const last_block = new Block(block);
-  /**/       console.log("  last block is: ")
-  /**/       console.log(last_block)
-  /**/       app.locals.previous_hash = last_block.hash();
-  /**/       console.log(`   max_id: ${app.locals.max_id}`);
-  /**/       console.log(`   previous_hash: ${app.locals.previous_hash}`);
-  /**/     });
-  /**/   }
-  /**/ });
+  console.log("- Recovering max_id and previous_hash from local blockchain");
+  app.locals.max_id;
+  app.locals.previous_hash;
+  Block.find((err, blocks) => {
+    if (err) console.log("ERRORS IN RETRIEVING BLOCKS");
+    if (blocks.length === 0) {
+      console.log("STILL NO BLOCKS HERE");
+    } else {
+      app.locals.max_id = blocks.reduce((a, b) => {
+        return Math.max(a.id, b.id) === a.id ? a : b;
+      }).id;
+      Block.findOne({ id: app.locals.max_id }, (err, block) => {
+        const last_block = new Block(block);
+        console.log("  last block is: ");
+        console.log(last_block);
+        app.locals.previous_hash = last_block.hash();
+        console.log(`   max_id: ${app.locals.max_id}`);
+        console.log(`   previous_hash: ${app.locals.previous_hash}`);
+      });
+    }
+  });
 };

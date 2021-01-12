@@ -38,7 +38,7 @@ BlockSchema.methods.hash = function () {
   ).toString();
 };
 
-BlockSchema.methods.hash = function (transactions) {
+BlockSchema.methods.hash_from_tr = function (transactions) {
   return sha256(
     this.nonce + transactions + this.previous_hash + this.id
   ).toString();
@@ -59,7 +59,7 @@ BlockSchema.methods.mine_block = function (target = this.target) {
   let hash;
   while (true) {
     this.nonce++;
-    hash = this.hash(transactions);
+    hash = this.hash_from_tr(transactions);
     if (parseInt(hash, 16) < target) {
       break;
     }

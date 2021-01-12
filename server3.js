@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 
 const mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost/blockchainDB2", {
+mongoose.connect("mongodb://localhost/blockchainDB3", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -42,14 +42,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/", routes());
 
-app.listen(3001, () => {
+app.listen(3002, () => {
   config();
-  console.log("Server listening on port 3001");
+  console.log("Server listening on port 3002");
 });
 
 const config = () => {
   //set the global variable port
-  app.locals.port = 3001;
+  app.locals.port = 3002;
 
   // Recover the max_id and previous_hash from db
   console.log("- Recovering max_id and previous_hash from local blockchain");

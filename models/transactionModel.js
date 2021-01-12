@@ -32,6 +32,7 @@ const TransactionSchema = new Schema({
 });
 
 TransactionSchema.methods.sign = function (sender_private_key) {
+  this.set_hash();
   this.signature = ec.keyFromSecret(sender_private_key).sign(this.hash).toHex();
 };
 
