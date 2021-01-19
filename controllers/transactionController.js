@@ -1,8 +1,14 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const qs = require("qs");
+const http = require("http");
 
-const { propagate_to_peers } = require("../utilities/functions");
+const isReachable = require("is-reachable");
+
+const {
+  propagate_to_peers,
+  save_transactions_from_single_peer,
+} = require("../utilities/functions");
 
 const Transaction = mongoose.model("Transaction");
 const User = mongoose.model("User");
@@ -74,7 +80,7 @@ const save_transaction = async (req, res, next) => {
     hash: req.body.hash,
   });
 
-  let tx = await transaction.save();
+  await transaction.save();
   console.log("  - transaction saved successfully");
 
   next();
@@ -151,10 +157,42 @@ const propagate_transaction = async (req, res) => {
   return res.status(200).send(return_str);
 };
 
+const get_transactions_from_peer = async (req, res) => {
+  if (await save_transactions_from_single_peer(req.body)) {
+    return res.status(200).json({
+      message: `Transactions fetched From Peer: ${req.body.address}:${req.body.port}`,
+    });
+  } else {
+    return res.status(503).json({ message: "Peer not available" });
+  }
+};
+
+const get_transactions_from_all_peers = async (req, res) => {
+  const peers = await Peer.find({});
+
+  if (peers.length === 0) {
+    return res.status(400).json({ message: "No peers found" });
+  }
+
+  for (let i in peers) {
+    if (await save_transactions_from_single_peer(peers[i])) {
+      console.log(
+        `Transactions fetched From Peer: ${peers[i].address}:${peers[i].port}`
+      );
+    } else {
+      console.log(`Peer: ${peers[i].address}:${peers[i].port} not available`);
+    }
+  }
+
+  return res.status(200).json({ message: "Transactions fetched from peers" });
+};
+
 module.exports = {
   validate_transaction,
   save_transaction,
   add_bunch_of_transactions,
   propagate_transaction,
   get_transactions,
+  get_transactions_from_peer,
+  get_transactions_from_all_peers,
 };

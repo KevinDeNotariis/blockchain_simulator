@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const Hash = mongoose.model("Hash");
 const Block = mongoose.model("Block");
 
+const { save_blocks_from_single_peer } = require("../utilities/functions");
+
 const mine_block = (req, res, next) => {
   const block = new Block(req.body);
 
@@ -85,8 +87,31 @@ const checks = async (req, res, next) => {
   next();
 };
 
+const get_blocks_from_id = async (req, res) => {
+  const blocks = await Block.find({ id: { $gte: req.body.id } });
+
+  if (blocks.length === 0)
+    return res
+      .status(400)
+      .json({ message: `No blocks with id > ${req.body.id} found` });
+
+  return res.status(200).json(blocks);
+};
+
+const get_blocks_from_peer = async (req, res) => {
+  if (await save_blocks_from_single_peer(req.body)) {
+    return res.status(200).json({
+      message: `Blocks fetched From Peer: ${req.body.address}:${req.body.port}`,
+    });
+  } else {
+    return res.status(503).json({ message: "Peer not available" });
+  }
+};
+
 module.exports = {
   checks,
   create_block,
   mine_block,
+  get_blocks_from_id,
+  get_blocks_from_peer,
 };

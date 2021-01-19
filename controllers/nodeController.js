@@ -1,6 +1,7 @@
 const http = require("http");
 const qs = require("qs");
 const mongoose = require("mongoose");
+const isReachable = require("is-reachable");
 
 const { propagate_to_peers } = require("../utilities/functions");
 
@@ -49,7 +50,7 @@ const create_txs_pool = (req, res, next) => {
 
 const propagate_block = async (req, res) => {
   console.log(
-    "\n\nINSIDE propagate_block ATTEMPTING TO PROPAGATE THE RECEIVED BLOCK TO OTHER PEERS"
+    "\n\nINSIDE propagate_block ATTEMPTING TO PROPAGATE THE BLOCK TO OTHER PEERS"
   );
 
   console.log("  - block we are trying to propagate: ");
@@ -78,7 +79,7 @@ const get_peers = async (req, res) => {
   return res.status(200).json(peers);
 };
 
-const fetchPeer = async (peer) => {
+const fetch_peer = async (peer) => {
   return new Promise((resolve) => {
     let ret = "";
     const options = {
@@ -104,7 +105,7 @@ const discover_peers = async (req, res) => {
   const peers_from_peer = [];
 
   for (i in peers) {
-    const fetched_peers = JSON.parse(await fetchPeer(peers[i]));
+    const fetched_peers = JSON.parse(await fetch_peer(peers[i]));
     for (j in fetched_peers) {
       let peer = await Peer.findOne({
         address: fetched_peers[j].address,
@@ -116,12 +117,15 @@ const discover_peers = async (req, res) => {
       }
       console.log("Adding new peer:");
       console.log(fetched_peers[j]);
-      const new_peer = new Peer({
+      let new_peer = new Peer({
         address: fetched_peers[j].address,
         port: fetched_peers[j].port,
-        status: fetched_peers[j].status,
         type: fetched_peers[j].type,
       });
+      new_peer.status ===
+      (await isReachable(`${new_peer.address}:${new_peer.port}`))
+        ? true
+        : false;
       await new_peer.save();
       peers_from_peer.push(new_peer);
     }

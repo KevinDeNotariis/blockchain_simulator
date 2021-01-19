@@ -36,5 +36,7 @@ module.exports = () => {
 
   router.get("/discover_peers", discover_peers);
 
+  router.post("/wake_up", discover_peers);
+
   return router;
 };

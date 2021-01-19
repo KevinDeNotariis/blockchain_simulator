@@ -42,8 +42,8 @@ const get_blockchain = (req, res) => {
   Block.find((err, blockchain) => {
     if (err) return res.status(401).json({ message: err });
 
-    if (!blockchain)
-      return res.status(400).json({ message: "Block not found" });
+    if (blockchain.length === 0)
+      return res.status(400).json({ message: "No blocks found" });
 
     return res.status(200).json(blockchain);
   });

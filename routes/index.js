@@ -6,16 +6,28 @@ const blockRoute = require("./block");
 const blockchainRoute = require("./blockchain");
 const userRoute = require("./user");
 
+const {
+  get_blockchain,
+  get_transactions,
+  get_peers,
+} = require("../utilities/dbManagement");
+
 const router = express.Router();
 
 module.exports = () => {
-  router.get("/", (req, res) => {
+  router.get("/", async (req, res) => {
+    const transactions = await get_transactions();
+    const blocks = await get_blockchain();
+    const peers = await get_peers();
+
     return res.render("index", {
-      title: "Blockchain",
+      title: "Home Page",
+      page: "blockchain/index",
       style: "home",
       script: "home",
       transactions: transactions,
       blocks: blocks,
+      peers: peers,
     });
   });
 
