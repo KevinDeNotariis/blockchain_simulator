@@ -1,12 +1,14 @@
 const sha256 = require("crypto-js/sha256");
 
 class Block {
-  constructor(id, previous_hash, transactions) {
-    this.id = id;
-    this.previous_hash = previous_hash;
-    this.transactions = transactions;
-
-    this.nonce = 0;
+  constructor() {
+    this.header = {
+      id: "",
+      previous_hash: "",
+      txs_root: "",
+      nonce: 0,
+    };
+    this.body = {};
   }
 
   serialize_transactions() {
