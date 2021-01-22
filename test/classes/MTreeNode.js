@@ -2,6 +2,7 @@ const MTreeNode = require("../../classes/MTreeNode");
 const chai = require("chai");
 const sha256 = require("crypto-js/sha256");
 const { expect } = require("chai");
+const MTree = require("../../classes/MTree");
 const should = chai.should();
 
 describe("MtreeNode Class", () => {
@@ -94,6 +95,45 @@ describe("MtreeNode Class", () => {
       );
 
       mTreeNode.is_leaf().should.be.eq(false);
+    });
+  });
+
+  context("The clone method", () => {
+    it("Should return an instance of MTreeNode", () => {
+      const mTreeNode = new MTreeNode("hash");
+      mTreeNode.clone().should.be.instanceOf(MTreeNode);
+
+      const mTreeNode_2 = new MTreeNode(
+        "hash",
+        new MTreeNode("hash_left"),
+        new MTreeNode("hash_right")
+      );
+      mTreeNode_2.clone().should.be.instanceOf(MTreeNode);
+    });
+    context("Should return a copy of the object, namely it", () => {
+      const mTreeNode = new MTreeNode("hash");
+      const mTreeNode_clone = mTreeNode.clone();
+
+      const mTreeNode_2 = new MTreeNode(
+        "hash",
+        new MTreeNode("hash_left"),
+        new MTreeNode("hash_right")
+      );
+      const mTreeNode_2_clone = mTreeNode_2.clone();
+      it("Should have the same hash", () => {
+        mTreeNode_clone.hash.should.be.eq(mTreeNode.hash);
+        mTreeNode_2_clone.hash.should.be.eq(mTreeNode_2.hash);
+      });
+
+      it("Should have the same 'left' and 'right' nodes", () => {
+        (typeof mTreeNode_clone.left).should.be.eq("undefined");
+        (typeof mTreeNode_clone.right).should.be.eq("undefined");
+
+        mTreeNode_2_clone.left.should.be.instanceOf(MTreeNode);
+        mTreeNode_2_clone.left.hash.should.be.eq(mTreeNode_2.left.hash);
+        mTreeNode_2_clone.right.should.be.instanceOf(MTreeNode);
+        mTreeNode_2_clone.right.hash.should.be.eq(mTreeNode_2.right.hash);
+      });
     });
   });
 });

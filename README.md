@@ -169,3 +169,87 @@ In particular:
 
    const key_pair = ec.keyFromSecret(hashed_string)
    ```
+
+## Merkle Tree
+
+The transactions in a block will be stored as a Merkle Tree (or Binary hash tree). The root of the tree will be stored in the Header of the block, while the transactions themeselves will be stored in the body of the block (like in the Bitcoin blockchain)
+
+A proof for the belonging of a given transaction (its hash) to the Merkle Tree is given by a sequence of hashes, thanks to which one can see whether the resulting hash is the root of the Merkle Tree the transaction is said to be belonging to.
+
+### Example:
+
+Suppose we have the following Merkle Tree:
+
+```
+                        block_12345678 === root
+                      /                        \
+                     /                          \
+                    /                            \
+                   /                              \
+                  /                                \
+                 /                                  \
+            block_1234                          block_5678
+           /          \                        /          \
+          /            \                      /            \
+         /              \                    /              \
+        /                \                  /                \
+    block_12          block_34          block_56          block_78
+   /       \         /       \         /       \         /       \
+leaf_1   leaf_2   leaf_3   leaf_4   leaf_5   leaf_6   leaf_7   leaf_8
+```
+
+where each "block" is actually an hash calculated as the hash of the sum of its children hashes:
+
+```
+block = hash(block.child_1 + block.child_2)
+```
+
+Suppose now that we would like to build a "proof" that the `leaf_4` belongs to the Merkle Tree with root given by `block_12345678`
+
+Then we can consider the following sequence of blocks:
+
+```
+[leaf_4, leaf_3, block_12, block_5678]
+```
+
+together with another array storing only zeros and ones stating if we have to sum the blocks in the order they appear or exchange them (will be more clear soon):
+
+```
+[1, 1, 0]
+```
+
+> In fact when we concatenate two strings, namely we do something like `string_a + string_b` we need to rememeber that this plus is not commutative! So clearly `hash(string_a + string_b) != hash(string_b + string_a)` and we need to know the correct order in which we need to sum the strings to obtain the correct hash in the Merkle tree.
+
+These two arrays will give a proof that the `leaf_4` is in the Merke Tree, in fact:
+
+1. We take the first two blocks in the first array. Check the first element in the second array. If it is a 0 we add them as they appear (namely we would do `hash(leaf_4 + leaf_5)`), while if it is a 1 we exchange in the hash calculation. In this case we find a 1 in the second array, so we construct:
+
+   ```
+   hash(leaf_3+leaf_4) = block_34
+   ```
+
+   and we replace the first two blocks in the sequence with this new block, to obtain:
+
+   ```
+   [block_34, block_12, block_5678]
+   ```
+
+1. We take again the first two elements, and look to the next element in the second array. We find again a 1, meaning that we need to exchange the elements in the sum:
+
+   ```
+   hash(block_12 + block_34) = block_1234
+   ```
+
+   and replace the blocks used with the computed one, to obtain:
+
+   ```
+   [block_1234, block_5678]
+   ```
+
+1. Finally we take these two blocks and look at the last element in the second array. It is a 0, meaning that we keep the order:
+
+   ```
+   hash(block_1234 + block_5678) = block_12345678
+   ```
+
+Now, if this last block hash is equal to the root of the Merkle Tree, then it means that the block we wanted to test is indeed part of Merkle Tree.

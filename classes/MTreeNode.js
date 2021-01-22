@@ -25,6 +25,16 @@ class MTreeNode {
   is_leaf() {
     return this.hash.substring(0, 1) === "0" ? true : false;
   }
+
+  clone() {
+    let ret = new MTreeNode(this.hash, this.left, this.right);
+    ret.hash = this.hash;
+    return ret;
+  }
+
+  static sort(nodes) {
+    return nodes.sort((a, b) => parseInt(a.hash, 16) - parseInt(b.hash, 16));
+  }
 }
 
 module.exports = MTreeNode;
