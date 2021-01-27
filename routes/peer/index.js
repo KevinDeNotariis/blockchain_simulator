@@ -11,7 +11,7 @@ module.exports = () => {
     return res.render("index", {
       title: "Peers",
       page: "peer/index",
-      styles: ["peer"],
+      styles: ["peer", "table"],
       script: "peer",
       peers: peers,
     });

@@ -9,28 +9,15 @@ const peerRoute = require("./peer");
 
 const setUpRoute = require("./set_up");
 
-const {
-  get_blockchain,
-  get_transactions,
-  get_peers,
-} = require("../utilities/dbManagement");
-
 const router = express.Router();
 
 module.exports = () => {
   router.get("/", async (req, res) => {
-    const transactions = await get_transactions();
-    const blocks = await get_blockchain();
-    const peers = await get_peers();
-
     return res.render("index", {
       title: `Peer at localhost:${req.app.locals.config.port}`,
       page: "index",
       styles: ["home", "buttons"],
       script: "home",
-      transactions: transactions,
-      blocks: blocks,
-      peers: peers,
     });
   });
 

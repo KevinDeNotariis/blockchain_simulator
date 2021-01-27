@@ -45,7 +45,17 @@ const get_blockchain = async () => {
   });
 };
 
-const get_transactions = async () => {
+const get_all_transactions = async () => {
+  return new Promise(async (done) => {
+    let transactions = [];
+    await (await Block.find({})).map((block) => {
+      transactions.push(...block.transactions);
+    });
+    done(transactions);
+  });
+};
+
+const get_transactions_in_pool = async () => {
   return new Promise(async (done) => {
     const transactions = await Transaction.find({});
     done(transactions);
@@ -62,7 +72,8 @@ const get_users = async () => {
 module.exports = {
   clear_db,
   get_blockchain,
-  get_transactions,
+  get_transactions_in_pool,
+  get_all_transactions,
   get_peers,
   get_users,
 };

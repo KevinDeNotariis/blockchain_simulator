@@ -10,17 +10,19 @@ const configuration = require("../config");
 
 const add_genesis_block = async (req, res, next) => {
   const genesis_transaction = new TransactionClass(
-    "0000000000000000",
-    "0000000000000000",
-    0
+    configuration.config.coinbase.public,
+    configuration.config.coinbase.public,
+    configuration.config.setUp.initial_money
   );
+
+  genesis_transaction.sign(configuration.config.coinbase.private);
 
   const genesis_block = new BlockClass();
   genesis_block.init(
     0,
     "0000000000000000",
     configuration.config.setUp.initial_difficulty,
-    [genesis_transaction.hash()]
+    [genesis_transaction]
   );
 
   genesis_block.mine();

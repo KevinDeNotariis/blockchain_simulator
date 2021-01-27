@@ -1,5 +1,6 @@
 const sha256 = require("crypto-js/sha256");
 const MTree = require("./MTree");
+const Transaction = require("./Transaction");
 
 class Block {
   constructor() {
@@ -21,7 +22,12 @@ class Block {
       this.header.difficulty = difficulty;
       this.transactions = transactions;
 
-      const mTree = new MTree(transactions);
+      let txs_hashes = [];
+      for (let i in transactions) {
+        txs_hashes.push(transactions[i].hash());
+      }
+
+      const mTree = new MTree(txs_hashes);
       mTree.fill_matrix();
       this.header.txs_root = mTree.root.hash;
     } else {

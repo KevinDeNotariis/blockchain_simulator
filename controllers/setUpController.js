@@ -67,7 +67,7 @@ const generate_transactions = async (req, res, next) => {
     configuration.config.setUp.initial_money /
     configuration.config.peers.length;
 
-  const txs = [];
+  let txs = [];
 
   // create the first transactions from COINBASE
   for (let i in configuration.config.peers) {
@@ -77,22 +77,20 @@ const generate_transactions = async (req, res, next) => {
       initial_sum
     );
     tx.sign(configuration.config.coinbase.private);
-    const tx_db = new Transaction(tx);
-    await tx_db.save();
+    //const tx_db = new Transaction(tx);
+    //await tx_db.save();
     txs.push(tx);
   }
 
   // create a block with these transactions, creating effectively money
   // from nothing
   const block = new BlockClass();
-  txs_str = txs.map((tx) => tx.hash());
-  console.log(txs);
 
   block.init(
     1,
     req.app.locals.previous_hash,
     configuration.config.setUp.initial_difficulty,
-    txs_str
+    txs
   );
 
   // mine the block
@@ -133,15 +131,15 @@ const generate_transactions = async (req, res, next) => {
       );
       tx.sign(peers[i].private_key);
       req.transactions.push(tx);
-      const tx_db = new Transaction(tx);
-      await tx_db.save();
+      //const tx_db = new Transaction(tx);
+      //await tx_db.save();
     }
   }
   next();
 };
 
 const mine_first_blocks = async (req, res, next) => {
-  const txs = req.transactions;
+  const txs = await req.transactions.map((elem) => new TransactionClass(elem));
   while (txs.length !== 0) {
     let current_txs = [];
     for (let i = 0; i < configuration.config.max_txs_in_block; i++) {
@@ -149,17 +147,12 @@ const mine_first_blocks = async (req, res, next) => {
       if (txs.length === 0) break;
     }
     const block = new BlockClass();
-    const txs_hashes = [];
-    for (let i in current_txs) {
-      const tx = new TransactionClass(current_txs[i]);
-      txs_hashes.push(tx.hash());
-    }
-    console.log(txs_hashes);
+    console.log(current_txs.map((elem) => elem.hash()));
     block.init(
       req.app.locals.max_id + 1,
       req.app.locals.previous_hash,
       configuration.config.setUp.initial_difficulty,
-      txs_hashes
+      current_txs
     );
     console.log(block.mine());
 
@@ -244,6 +237,11 @@ const add_blocks = async (req, res) => {
 const add_hashes = async (req, res) => {
   console.log("Adding hashes");
   await Hash.insertMany(req.body.hashes);
+  const last = await Hash.find({}).sort({ block_id: -1 }).limit(1);
+
+  req.app.locals.previous_hash = last[0].block_hash;
+  req.app.locals.max_id = last[0].block_id;
+
   return res.status(200).json({ message: "Hashes added" });
 };
 

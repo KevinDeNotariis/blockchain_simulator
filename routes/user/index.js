@@ -1,15 +1,8 @@
 const express = require("express");
 
-const {
-  generate_keys,
-  add_bunch_of_users,
-  generate_transaction,
-} = require("../../controllers/userController");
+const userController = require("../../controllers/userController");
 
-const {
-  propagate_transaction,
-  save_transaction,
-} = require("../../controllers/transactionController");
+const transactionController = require("../../controllers/transactionController");
 
 const { get_users } = require("../../utilities/dbManagement");
 
@@ -28,16 +21,18 @@ module.exports = () => {
     });
   });
 
-  router.post("/add_bunch_of_users", add_bunch_of_users);
+  router.post("/add_bunch_of_users", userController.add_bunch_of_users);
 
-  router.get("/generate_keys", generate_keys);
+  router.get("/generate_keys", userController.generate_keys);
 
   router.post(
     "/generate_transaction",
-    generate_transaction,
-    save_transaction,
-    propagate_transaction
+    userController.generate_transaction,
+    transactionController.save_transaction,
+    transactionController.propagate_transaction
   );
+
+  router.get("/get_balance", userController.get_balance);
 
   return router;
 };

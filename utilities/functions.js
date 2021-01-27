@@ -13,15 +13,16 @@ const propagate_to_peers = async (_post_data, api, method) => {
     const peers = await check_peers_availability();
     const post_data = qs.stringify(JSON.parse(JSON.stringify(_post_data)));
     if (peers === undefined || peers.length === 0) {
-      return "No peers available";
+      done("No peers available");
     }
     let return_str = "";
     let counter = 0;
     for (i in peers) {
+      /*
       if (!peers[i].status) {
         return_str += `Peer: ${peers[i].address}:${peers[i].port} not available\n`;
         continue;
-      }
+      }*/
       counter += 1;
       const options = {
         host: peers[i].address,
@@ -52,21 +53,12 @@ const propagate_to_peers = async (_post_data, api, method) => {
   });
 };
 
-const save_transactions_from_single_peer = async ({
-  address,
-  port,
-  type,
-  status,
-}) => {
+const save_transactions_from_single_peer = async ({ address, port }) => {
   return new Promise(async (done) => {
     if (await isReachable(`${address}:${port}`)) {
-      const peer = new Peer({
-        address: address,
-        port: port,
-        type: type,
-        status: true,
-      });
-      const fetched_transactions = JSON.parse(await fetch_transactions(peer));
+      const fetched_transactions = JSON.parse(
+        await fetch_transactions(address, port)
+      );
       for (let i in fetched_transactions) {
         const transaction = await Transaction.findOne({
           id: fetched_transactions[i].id,
@@ -91,7 +83,7 @@ const save_transactions_from_single_peer = async ({
   });
 };
 
-const fetch_transactions = async ({ address, port }) => {
+const fetch_transactions = async (address, port) => {
   return new Promise((resolve) => {
     let ret = "";
     const options = {
@@ -154,10 +146,12 @@ const save_blocks_from_single_peer = async (address, port, id, max_id) => {
 
 const check_peers_availability = async () => {
   const peers = await Peer.find({});
+  let ret = [];
   if (peers.length !== 0) {
     peers.map(async (peer) => {
       if (await isReachable(`${peer.address}:${peer.port}`)) {
         peer.status = true;
+        ret.push(peer);
       } else {
         peer.status = false;
       }
@@ -167,7 +161,7 @@ const check_peers_availability = async () => {
       );
     });
   }
-  return peers;
+  return ret;
 };
 
 module.exports = {

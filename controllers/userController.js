@@ -36,13 +36,6 @@ const add_bunch_of_users = async (req, res) => {
   return res.status(200).send("Users inserted");
 };
 
-/*------ generate_keys ---------
-  output: 
-    secretWords: String[12] 
-    public_key: String
-    private_key: String
-*/
-
 const generate_keys = (req, res) => {
   const secretWords = randomWords(12);
 
@@ -91,7 +84,7 @@ const generate_transaction = async (req, res, next) => {
   console.log("  - private key recovered");
   transaction.sign(user.private_key);
 
-  req.body = transaction;
+  req.body.transaction = transaction;
 
   console.log("  - final transaction sent to save_transaction");
   console.log(transaction);
@@ -99,8 +92,32 @@ const generate_transaction = async (req, res, next) => {
   next();
 };
 
+const get_balance = async (req, res, next) => {
+  const user = req.body.user;
+
+  const sent = await Transaction.find({ sender: user.public_key });
+  const received = await Transaction.find({ receiver: user.public_key });
+
+  let spent = 0;
+  gained = 0;
+
+  if (sent.length === 0) {
+    console.log("This user did not spend any money");
+  } else {
+    spent = await sent.map((elem) => elem.amount).reduce((a, b) => a + b);
+  }
+  if (received.length === 0) {
+    console.log("This user did not receive any money");
+  } else {
+    gained = await received.map((elem) => elem.amount).reduce((a, b) => a + b);
+  }
+
+  return res.status(200).json({ balance: gained - spent });
+};
+
 module.exports = {
   generate_keys,
   add_bunch_of_users,
   generate_transaction,
+  get_balance,
 };

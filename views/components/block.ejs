@@ -49,18 +49,9 @@
         <% } else {%>
         <p class="block-tx-label"></p>
         <% } %>
-        <p class="block-tx-value"><%= blocks[i].transactions[j] %></p>
+        <p class="block-tx-value"><%= blocks[i].transactions[j].hash() %></p>
         <% } %>
       </div>
     </div>
-    <!--
-      <div class="block-entry block-entry-btn">
-        <button class="btn-mine">Mine</button>
-      </div>
-      <div class="block-entry block-entry-btn">
-        <button class="btn-mine-onwards">Mine onwards</button>
-      </div>
-
-    -->
   </div>
 </div>

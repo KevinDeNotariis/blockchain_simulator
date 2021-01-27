@@ -7,28 +7,20 @@ const {
 
 const { propagate_block } = require("../../controllers/nodeController");
 
-const {
-  get_blockchain,
-  get_transactions,
-  get_peers,
-} = require("../../utilities/dbManagement");
+const dbManagement = require("../../utilities/dbManagement");
 
 const router = express.Router();
 
 module.exports = () => {
   router.get("/", async (req, res) => {
-    const transactions = await get_transactions();
-    const blocks = await get_blockchain();
-    const peers = await get_peers();
+    const blocks = await dbManagement.get_blockchain();
 
     return res.render("index", {
       title: "Blockchain",
       page: "blockchain/index",
       styles: ["blockchain"],
       script: "blockchain",
-      transactions: transactions,
       blocks: blocks,
-      peers: peers,
     });
   });
 

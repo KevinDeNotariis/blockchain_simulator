@@ -3,6 +3,8 @@ const sha256 = require("crypto-js/sha256");
 
 const Schema = mongoose.Schema;
 
+const TransactionSchema = require("./transactionModel");
+
 const BlockHeaderSchema = new Schema({
   id: {
     type: Number,
@@ -18,7 +20,11 @@ const BlockHeaderSchema = new Schema({
   },
   nonce: {
     type: Number,
-    default: 0,
+    required: true,
+  },
+  timestamp: {
+    type: Number,
+    required: true,
   },
   difficulty: {
     type: Number,
@@ -32,7 +38,7 @@ const BlockSchema = new Schema({
     required: true,
   },
   transactions: {
-    type: Array,
+    type: [TransactionSchema],
     required: true,
   },
 });

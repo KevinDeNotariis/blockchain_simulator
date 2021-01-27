@@ -102,32 +102,3 @@ body {
 /*-----------------------------------*/
 /*-----------TRANSACTIONS------------*/
 /*-----------------------------------*/
-
-.transactions,
-.peers {
-  font-family: "Courier New", Courier, monospace;
-  width: 500px;
-}
-
-table {
-  table-layout: fixed;
-  border: 2px solid black;
-  width: 100%;
-}
-
-tr {
-  white-space: nowrap;
-}
-
-td {
-  display: inline-block;
-  border-right: 1px solid black;
-  width: 100%;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-tr td:last-child {
-  border: none;
-}

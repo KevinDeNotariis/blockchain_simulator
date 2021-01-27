@@ -1,58 +1,57 @@
 const express = require("express");
 
-const {
-  save_transaction,
-  validate_transaction,
-  add_bunch_of_transactions,
-  propagate_transaction,
-  get_transactions_from_peer,
-  get_transactions_from_all_peers,
-} = require("../../controllers/transactionController");
+const transactionController = require("../../controllers/transactionController");
 
-const { get_transactions } = require("../../utilities/dbManagement");
+const dbManagement = require("../../utilities/dbManagement");
 
-const { generate_transaction } = require("../../controllers/userController");
+const userController = require("../../controllers/userController");
 
 const router = express.Router();
 
 module.exports = () => {
   router.get("/", async (req, res) => {
-    const transactions = await get_transactions();
+    const transactions_validated = await dbManagement.get_all_transactions();
 
     return res.render("index", {
       title: "Transactions",
       page: "transaction/index",
-      styles: ["transaction", "buttons"],
+      styles: ["transaction", "buttons", "table"],
       script: "transaction",
-      transactions: transactions,
+      transactions_validated: transactions_validated,
     });
   });
 
-  router.post("/add_bunch_of_transactions", add_bunch_of_transactions);
+  router.post(
+    "/add_bunch_of_transactions",
+    transactionController.add_bunch_of_transactions
+  );
 
   router.post(
     "/accept_transaction",
-    validate_transaction,
-    save_transaction,
-    propagate_transaction
+    transactionController.validate_transaction,
+    transactionController.save_transaction,
+    transactionController.propagate_transaction
   );
 
   router.post(
     "/add_transaction",
-    generate_transaction,
-    save_transaction,
+    userController.generate_transaction,
+    transactionController.save_transaction,
     (req, res) => {
       return res.status(200).json(req.body);
     }
   );
 
-  //router.get("/get_transactions", get_transactions);
+  router.get("/get_transactions", transactionController.get_transactions);
 
-  router.get("/get_transactions_from_peer", get_transactions_from_peer);
+  router.get(
+    "/get_transactions_from_peer",
+    transactionController.get_transactions_from_peer
+  );
 
   router.get(
     "/get_transactions_from_all_peers",
-    get_transactions_from_all_peers
+    transactionController.get_transactions_from_all_peers
   );
 
   return router;

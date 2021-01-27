@@ -8,7 +8,7 @@ const HashSchema = new Schema({
     required: true,
   },
   block_id: {
-    type: String,
+    type: Number,
     required: true,
   },
 });

@@ -11,6 +11,7 @@ class Transaction {
       this.amount = sender.amount;
       this.id = sender.id;
       this.timestamp = sender.timestamp;
+      this.signature = sender.signature;
     } else {
       this.sender = sender;
       this.receiver = receiver;

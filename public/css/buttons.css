@@ -16,3 +16,14 @@ button:hover {
   background-color: #333;
   color: #fff;
 }
+
+button:disabled {
+  background-color: red;
+}
+
+button:disabled:hover {
+  cursor: not-allowed;
+  background-color: red;
+  font-size: 15px;
+  color: white;
+}
