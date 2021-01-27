@@ -8,6 +8,9 @@ class MTree {
       throw new TypeError("MTree needs an argument in the constructor");
     } else if (!(hashes instanceof Array)) {
       throw new TypeError("MTree constructor param needs to be an array");
+    } else if (hashes.length === 1) {
+      this.root = new MTreeNode(hashes[0]);
+      return this;
     }
 
     hashes.map((elem) => {

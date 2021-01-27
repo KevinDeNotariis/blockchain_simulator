@@ -5,6 +5,9 @@ const transactionRoute = require("./transaction");
 const blockRoute = require("./block");
 const blockchainRoute = require("./blockchain");
 const userRoute = require("./user");
+const peerRoute = require("./peer");
+
+const setUpRoute = require("./set_up");
 
 const {
   get_blockchain,
@@ -21,9 +24,9 @@ module.exports = () => {
     const peers = await get_peers();
 
     return res.render("index", {
-      title: "Home Page",
-      page: "blockchain/index",
-      style: "home",
+      title: `Peer at localhost:${req.app.locals.config.port}`,
+      page: "index",
+      styles: ["home", "buttons"],
       script: "home",
       transactions: transactions,
       blocks: blocks,
@@ -36,6 +39,8 @@ module.exports = () => {
   router.use("/block", blockRoute());
   router.use("/blockchain", blockchainRoute());
   router.use("/user", userRoute());
+  router.use("/peer", peerRoute());
+  router.use("/set_up", setUpRoute());
 
   return router;
 };

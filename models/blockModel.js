@@ -1,11 +1,9 @@
 const mongoose = require("mongoose");
 const sha256 = require("crypto-js/sha256");
 
-const TransactionSchema = require("./transactionModel");
-
 const Schema = mongoose.Schema;
 
-const BlockSchema = new Schema({
+const BlockHeaderSchema = new Schema({
   id: {
     type: Number,
     required: true,
@@ -14,30 +12,41 @@ const BlockSchema = new Schema({
     type: String,
     required: true,
   },
+  txs_root: {
+    type: String,
+    required: true,
+  },
   nonce: {
     type: Number,
     default: 0,
   },
-  transactions: {
-    type: [TransactionSchema],
+  difficulty: {
+    type: Number,
     required: true,
   },
-  target: {
-    type: Number,
-    default: Math.pow(2, 256 - 16),
+});
+
+const BlockSchema = new Schema({
+  header: {
+    type: BlockHeaderSchema,
+    required: true,
+  },
+  transactions: {
+    type: Array,
+    required: true,
   },
 });
 
 BlockSchema.methods.hash = function () {
-  let transactions = "";
-  this.transactions.map((elem) => {
-    transactions += elem.serialize();
-  });
   return sha256(
-    this.nonce + transactions + this.previous_hash + this.id
+    String(this.header.id) +
+      this.header.previous_hash +
+      this.header.txs_root +
+      String(this.header.nonce) +
+      String(this.header.difficulty)
   ).toString();
 };
-
+/*
 BlockSchema.methods.hash_from_tr = function (transactions) {
   return sha256(
     this.nonce + transactions + this.previous_hash + this.id
@@ -67,6 +76,6 @@ BlockSchema.methods.mine_block = function (target = this.target) {
   console.log(" - Hash found: " + this.hash());
   console.log(" - With nonce: " + this.nonce);
   return this;
-};
+};*/
 
 module.exports = BlockSchema;

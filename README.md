@@ -25,7 +25,7 @@
   npm run dev
   ```
 
-  to start the first node (listening on `localhost:3000`);
+  to start the first node (listening on `localhost:3001`);
 
 - In another terminal, type:
 
@@ -33,7 +33,7 @@
   npm run dev2
   ```
 
-  to start the second node (listening on `localhost:3001`)
+  to start the second node (listening on `localhost:3002`)
 
 - In another terminal, type:
 
@@ -41,47 +41,37 @@
   npm run dev3
   ```
 
-  to start the second node (listening on `localhost:3002`)
+  to start the second node (listening on `localhost:3003`)
 
 ## Initialization
 
-You need now to make POST requests for the following APIs in this order:
+Open a webpage and navigate to http://localhost:3001 (or to http://localhost:3002 or http://localhost:3003).
 
-1.  POST `http://localhost:3000/blockchain/generate_genesis_block`
+Click the `Set Up` button, what it will do is the following:
 
-    This will generate the genesis block in the `blocks` collection of the `blockchainDB` database.
+1. Check whether the node has been already set up;
+1. Clear the database;
+1. Add the genesis block;
+1. Generate a number of users specified in the `config.js` file (100 at the moment);
+1. Create 3 transactions (equals to the number of nodes) from the `coinbase` address to the addresses of these three nodes (which will be mining nodes), where the amount of each one of these transactions is the `initial_money` in `config.js` divided by the number of nodes (3);
+1. Create a block containing these 3 transactions and mine it;
+1. Create other transactions (specified in the `config.js` file, 100 at the moment (actually it will generate 99 transactions, 33 from each node)) from each node to some random users, to distribute some money;
+1. Create, one by one, blocks containing the maximum number of transactions allowed (specified in the `config.js` file, 5 at the moment) and mine them;
+1. Take the peers in the `config.js` file and add them to the database;
+1. Send every collection in the database (`blocks`, `transactions`, `users`, `hashes`) to the other peers, namely to localhost:3002 and localhost:3003. This involves making the following POST request to these addresses:
 
-1.  POST `http://localhost:3001/blockchain/generate_genesis_block`
+   1. POST `/set_up/clear_db`;
+   1. POST `/set_up/add_users`;
+   1. POST `/set_up/add_transactions`;
+   1. POST `/set_up/add_blocks`;
+   1. POST `/set_up/add_hashes`;
+   1. POST `/set_up/add_peers`;
 
-    This will generate the genesis block in the `blocks` collection of the `blockchainDB2` database.
+Each of `/add_users`, `/add_transactions`, `add_blocks` and `add_hashes` routes receive in the body of the request object, their corresponding array of objects and add them to the database.
 
-1.  POST `http://localhost:3002/blockchain/generate_genesis_block`
+## Moving Around
 
-    This will generate the genesis block in the `blocks` collection of the `blockchainDB3` database.
-
-1.  POST `http://localhost:3000/users/generate_bunch_of_users`
-
-    by adding in the `body` of the request a key-value pair as follows:
-
-    ```
-    num_user: 20
-    ```
-
-    (or whatever number of users you like)
-
-1.  Copy these users (which will be generated in the collection `users` of the `blockchainDB` database in mongoDB) to the `users` collection of the `blockchainDB2` for the second node and to the `users` collection of the `blockchainDB3` for the third node.
-
-1.  POST `http://localhost:3000/transactions/generate_bunch_of_transactions`
-
-    by adding in the `body` of the request a key-value pair as follows:
-
-    ```
-    num_txs: 20
-    ```
-
-(or whatever number of transactions you like)
-
-1. Copy these transactions (which will be generated in the collection `transactions` of the `blockchainDB` database in mongoDB) to the `transactions` collection of the `blockchainDB2` for the second node and to the `transactions` collection of the `blockchainDB3` for the third node.
+From the home page you can navigate to `/blockchain` by clicking on the `Blockchain` button. This will fetch the blocks from the database and display them. Same for `/user`, `/transaction` and `/peer`.
 
 ## APIs
 
@@ -174,7 +164,7 @@ In particular:
 
 The transactions in a block will be stored as a Merkle Tree (or Binary hash tree). The root of the tree will be stored in the Header of the block, while the transactions themeselves will be stored in the body of the block (like in the Bitcoin blockchain)
 
-A proof for the belonging of a given transaction (its hash) to the Merkle Tree is given by a sequence of hashes, thanks to which one can see whether the resulting hash is the root of the Merkle Tree the transaction is said to be belonging to.
+A proof for the belonging of a given transaction (its hash) to the Merkle Tree is given by a sequence of hashes, thanks to which one can see whether the resulting hash is the root of the Merkle Tree.
 
 ### Example:
 

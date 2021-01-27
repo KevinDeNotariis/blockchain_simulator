@@ -2,32 +2,56 @@
   <div class="block-item block-container-id">
     <div class="block-entry">
       <p class="block-label">Block ID:</p>
-      <p class="block-value block-id-value"><%= blocks[i].id %></p>
+      <p class="block-value block-id-value"><%= blocks[i].header.id %></p>
     </div>
   </div>
   <div class="block-item block-container-body">
-    <div class="block-entry-tx block-entry-tx">
-      <% for(j in blocks[i].transactions){ if(j == 0){%>
-      <p class="block-tx-label">Transactions:</p>
-      <% } else {%>
-      <p class="block-tx-label"></p>
-      <% } %>
-      <p class="block-tx-value"><%= blocks[i].transactions[j].id %></p>
-      <% } %>
+    <div class="header">
+      <div class="block-entry">
+        <p class="block-label">Merkle Root:</p>
+        <p class="block-value block-txs-root-value">
+          <%= blocks[i].header.txs_root %>
+        </p>
+      </div>
+      <div class="block-entry">
+        <p class="block-label">Previous Hash:</p>
+        <p class="block-value block-prev-hash-value">
+          <%= blocks[i].header.previous_hash %>
+        </p>
+      </div>
+      <div class="block-entry">
+        <p class="block-label">Nonce:</p>
+        <p class="block-value block-nonce-value">
+          <%= blocks[i].header.nonce %>
+        </p>
+      </div>
+      <div class="block-entry">
+        <p class="block-label">Hash:</p>
+        <p class="block-value block-hash-value"><%=blocks[i].hash() %></p>
+      </div>
+      <div class="block-entry">
+        <p class="block-label">Difficulty:</p>
+        <p class="block-value block-difficulty-value">
+          <%=blocks[i].header.difficulty %>
+        </p>
+      </div>
+      <div class="block-entry">
+        <p class="block-label">Timestamp:</p>
+        <p class="block-value block-timestamp-value">
+          <%=blocks[i].header.timestamp %>
+        </p>
+      </div>
     </div>
-    <div class="block-entry">
-      <p class="block-label">Previous Hash:</p>
-      <p class="block-value block-prev-hash-value">
-        <%= blocks[i].previous_hash %>
-      </p>
-    </div>
-    <div class="block-entry">
-      <p class="block-label">Nonce:</p>
-      <p class="block-value block-nonce-value"><%= blocks[i].nonce %></p>
-    </div>
-    <div class="block-entry">
-      <p class="block-label">Hash:</p>
-      <p class="block-value block-hash-value"><%= blocks[i].hash() %></p>
+    <div class="body">
+      <div class="block-entry-tx block-entry-tx">
+        <% for(j in blocks[i].transactions){ if(j == 0){%>
+        <p class="block-tx-label">Transactions:</p>
+        <% } else {%>
+        <p class="block-tx-label"></p>
+        <% } %>
+        <p class="block-tx-value"><%= blocks[i].transactions[j] %></p>
+        <% } %>
+      </div>
     </div>
     <!--
       <div class="block-entry block-entry-btn">

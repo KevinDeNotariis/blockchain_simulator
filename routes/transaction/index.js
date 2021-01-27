@@ -5,16 +5,29 @@ const {
   validate_transaction,
   add_bunch_of_transactions,
   propagate_transaction,
-  get_transactions,
   get_transactions_from_peer,
   get_transactions_from_all_peers,
 } = require("../../controllers/transactionController");
+
+const { get_transactions } = require("../../utilities/dbManagement");
 
 const { generate_transaction } = require("../../controllers/userController");
 
 const router = express.Router();
 
 module.exports = () => {
+  router.get("/", async (req, res) => {
+    const transactions = await get_transactions();
+
+    return res.render("index", {
+      title: "Transactions",
+      page: "transaction/index",
+      styles: ["transaction", "buttons"],
+      script: "transaction",
+      transactions: transactions,
+    });
+  });
+
   router.post("/add_bunch_of_transactions", add_bunch_of_transactions);
 
   router.post(
@@ -33,7 +46,7 @@ module.exports = () => {
     }
   );
 
-  router.get("/get_transactions", get_transactions);
+  //router.get("/get_transactions", get_transactions);
 
   router.get("/get_transactions_from_peer", get_transactions_from_peer);
 

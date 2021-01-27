@@ -1,62 +1,43 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const qs = require("qs");
-const http = require("http");
 
-const isReachable = require("is-reachable");
-
-const {
-  propagate_to_peers,
-  save_transactions_from_single_peer,
-} = require("../utilities/functions");
+const functions = require("../utilities/functions");
 
 const Transaction = mongoose.model("Transaction");
 const User = mongoose.model("User");
 const Peer = mongoose.model("Peer");
 
 const add_bunch_of_transactions = async (req, res) => {
-  let transaction;
-  let sender;
-  let receiver;
-  let doc_num;
-  await User.find((err, u) => (doc_num = u.length));
+  console.log(`Number of transactions to be added: ${req.body.num_txs}`);
+  let doc_num = (await User.find({})).length;
   for (let i = 0; i < req.body.num_txs; i++) {
-    await User.findOne(
-      {},
-      null,
-      { skip: Math.floor(Math.random() * doc_num) },
-      (err, user) => {
-        sender = user.public_key;
-      }
-    );
+    const sender = (
+      await User.findOne({}, null, {
+        skip: Math.floor(Math.random() * doc_num),
+      })
+    ).public_key;
     console.log(sender);
-    await User.findOne(
-      {},
-      null,
-      { skip: Math.floor(Math.random() * doc_num) },
-      (err, user) => {
-        receiver = user.public_key;
-      }
-    );
+    const receiver = (
+      await User.findOne({}, null, {
+        skip: Math.floor(Math.random() * doc_num),
+      })
+    ).public_key;
     console.log(receiver);
-    transaction = new Transaction({
+    const transaction = new Transaction({
       id: crypto.randomBytes(32).toString("hex"),
       sender: sender,
       receiver: receiver,
       amount: Math.floor(Math.random() * 1000),
     });
 
-    await User.findOne({ public_key: sender }, (err, user) => {
-      if (err) return res.status(401).json({ message: err });
-      if (!user) return res.status(400).message({ message: "User not found" });
-      transaction.sign(user.private_key);
-    });
-
-    transaction.save((err, tx) => {
-      if (err) return res.status(401).json({ message: err });
-
-      console.log("Added the following transaction");
-    });
+    const user = await User.findOne({ public_key: sender });
+    if (!user) {
+      return res.status(400).message({ message: "User not found" });
+    }
+    transaction.sign(user.private_key);
+    await transaction.save();
+    console.log("Added the above transaction");
   }
   return res.status(200).send("Transaction added");
 };
@@ -131,23 +112,8 @@ const propagate_transaction = async (req, res) => {
   console.log(
     "\n\nINSIDE propagate_transaction, ATTEMPTING TO SEND TRANSACTION TO PEERS"
   );
-
-  console.log("  - searching for the peers");
-  let peers = await Peer.find({});
-  if (peers.length === 0) {
-    return res.status(400).json({ message: "No peers found" });
-  }
-
-  console.log("  - found the following peers:");
-  console.log(peers);
-
-  console.log("  - sending transaction to the peers");
-
-  const post_data = qs.stringify(JSON.parse(JSON.stringify(req.body)));
-
-  const return_str = propagate_to_peers(
-    peers,
-    post_data,
+  const return_str = await functions.propagate_to_peers(
+    req.body,
     "/transaction/accept_transaction",
     "POST"
   );

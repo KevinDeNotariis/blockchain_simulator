@@ -23,17 +23,29 @@ const TransactionSchema = new Schema({
     type: Number,
     required: true,
   },
-  hash: {
-    type: String,
+  timestamp: {
+    type: Number,
+    required: true,
   },
   signature: {
     type: String,
+    require: true,
   },
 });
 
 TransactionSchema.methods.sign = function (sender_private_key) {
   this.set_hash();
   this.signature = ec.keyFromSecret(sender_private_key).sign(this.hash).toHex();
+};
+
+TransactionSchema.methods.hash = function () {
+  return sha256(
+    this.sender +
+      this.receiver +
+      String(this.amount) +
+      this.id +
+      String(this.timestamp)
+  ).toString();
 };
 
 TransactionSchema.methods.verify = function () {

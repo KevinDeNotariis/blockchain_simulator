@@ -9,7 +9,7 @@ const ec = new EdDSA("ed25519");
 const User = mongoose.model("User");
 const Transaction = mongoose.model("Transaction");
 
-const add_bunch_of_users = (req, res) => {
+const add_bunch_of_users = async (req, res) => {
   let user;
   for (let i = 0; i < req.body.num_users; i++) {
     const secretWords = randomWords(12);
@@ -30,11 +30,7 @@ const add_bunch_of_users = (req, res) => {
       public_key: public_key,
       private_key: private_key,
     });
-    user.save((err, doc) => {
-      if (err) return res.status(401).json({ message: err });
-      console.log("Added the following user:");
-      console.log(doc);
-    });
+    const doc = await user.save();
   }
 
   return res.status(200).send("Users inserted");

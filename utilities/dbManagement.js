@@ -5,6 +5,21 @@ const mongoose = require("mongoose");
 const Block = mongoose.model("Block");
 const Transaction = mongoose.model("Transaction");
 const Peer = mongoose.model("Peer");
+const User = mongoose.model("User");
+const Hash = mongoose.model("Hash");
+
+const clear_db = async () => {
+  await Block.deleteMany({});
+  console.log("Blocks cleared");
+  await Transaction.deleteMany({});
+  console.log("Transactions cleared");
+  await Peer.deleteMany({});
+  console.log("Peers cleared");
+  await User.deleteMany({});
+  console.log("Users cleared");
+  await Hash.deleteMany({});
+  console.log("Hashes cleared");
+};
 
 const get_peers = async () => {
   return new Promise(async (done) => {
@@ -37,4 +52,17 @@ const get_transactions = async () => {
   });
 };
 
-module.exports = { get_blockchain, get_transactions, get_peers };
+const get_users = async () => {
+  return new Promise(async (done) => {
+    const users = await User.find({});
+    done(users);
+  });
+};
+
+module.exports = {
+  clear_db,
+  get_blockchain,
+  get_transactions,
+  get_peers,
+  get_users,
+};

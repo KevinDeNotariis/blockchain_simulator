@@ -11,9 +11,23 @@ const {
   save_transaction,
 } = require("../../controllers/transactionController");
 
+const { get_users } = require("../../utilities/dbManagement");
+
 const router = express.Router();
 
 module.exports = () => {
+  router.get("/", async (req, res) => {
+    const users = await get_users();
+
+    return res.render("index", {
+      title: "Users",
+      page: "user/index",
+      styles: ["user"],
+      script: "user",
+      users: users,
+    });
+  });
+
   router.post("/add_bunch_of_users", add_bunch_of_users);
 
   router.get("/generate_keys", generate_keys);

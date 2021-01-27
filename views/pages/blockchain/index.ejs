@@ -1,55 +1,42 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <% if(typeof style !== 'undefined'){%>
-    <link rel="stylesheet" href="/css/<%= style %>.css" />
-    <% } %>
-    <title><%= title %></title>
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <div class="blockchain">
-      <% for(i in blocks){%> <%- include('../../components/block') %> <% } %>
-    </div>
+<h1><%= title %></h1>
+<div class="blockchain">
+  <% for(i in blocks){%> <%- include('../../components/block') %> <% } %>
+</div>
+<!--
 
-    <div class="info-container">
-      <div class="transactions">
-        <h1>Transactions</h1>
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">ID</th>
-              <th scope="col">Sender</th>
-              <th scope="col">Recepient</th>
-              <th scope="col">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%- include('../../components/transaction') %>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="peers">
-        <h1>Peers</h1>
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Address</th>
-              <th scope="col">Port</th>
-              <th scope="col">Status</th>
-              <th scope="col">Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%- include('../../components/peer') %>
-          </tbody>
-        </table>
-      </div>
+  <div class="info-container">
+    <div class="transactions">
+      <h1>Transactions</h1>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Sender</th>
+            <th scope="col">Recepient</th>
+            <th scope="col">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%- include('../../components/transaction') %>
+        </tbody>
+      </table>
     </div>
-    <script language="javascript" src="/js/jquery.js"></script>
-    <% if(typeof script !== 'undefined') { %>
-    <script language="javascript" src="/js/<%= script %>.js"></script>
-    <% } %>
-  </body>
-</html>
+    
+    <div class="peers">
+      <h1>Peers</h1>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Address</th>
+            <th scope="col">Port</th>
+            <th scope="col">Status</th>
+            <th scope="col">Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%- include('../../components/peer') %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+-->

@@ -1,0 +1,58 @@
+.container-transactions {
+  display: flex;
+}
+
+.transactions {
+  font-family: "Courier New", Courier, monospace;
+  width: 700px;
+}
+
+table {
+  table-layout: fixed;
+  border: 2px solid black;
+  width: 100%;
+}
+
+tr {
+  white-space: nowrap;
+}
+
+td {
+  display: inline-block;
+  border-right: 1px solid black;
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+tr td:last-child {
+  border: none;
+}
+
+.add-transactions-form {
+  margin-top: 20px;
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#txs_num {
+  border-top: none;
+  border-right: none;
+}
+
+#txs_num:focus {
+  outline: none;
+}
+
+.submit-button {
+  margin-top: 20px;
+}

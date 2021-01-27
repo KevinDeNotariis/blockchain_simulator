@@ -3,11 +3,16 @@ const qs = require("qs");
 const mongoose = require("mongoose");
 const isReachable = require("is-reachable");
 
-const { propagate_to_peers } = require("../utilities/functions");
-
 const Node = mongoose.model("Node");
 const Transaction = mongoose.model("Transaction");
 const Peer = mongoose.model("Peer");
+
+const functions = require("../utilities/functions");
+const dbManagement = require("../utilities/dbManagement");
+
+const clear_db = (req, res) => {
+  dbManagement.clear_dbs();
+};
 
 const add_node = (req, res) => {
   const newNode = new Node({
@@ -39,8 +44,10 @@ const create_txs_pool = (req, res, next) => {
       if (counter >= process.env.MAX_TXS_IN_BLOCK) {
         break;
       }
-      txs_pool.push(txs[i]);
-      counter += 1;
+      if (txs[i].verify()) {
+        txs_pool.push(txs[i]);
+        counter += 1;
+      }
     }
 
     req.body.transactions = txs_pool;
@@ -57,18 +64,13 @@ const propagate_block = async (req, res) => {
   console.log(req.body);
   let post_data = qs.stringify(JSON.parse(JSON.stringify(req.body)));
 
-  let peers = await Peer.find({});
-  if (peers.length === 0)
-    return res.status(400).json({ message: "No peers found" });
-
-  let return_str = propagate_to_peers(
-    peers,
+  let return_str = await functions.propagate_to_peers(
     post_data,
     "/node/accept_block",
     "POST"
   );
 
-  console.log("  - block propagated");
+  console.log(return_str);
 
   return res.status(200).send(return_str);
 };
@@ -111,7 +113,7 @@ const discover_peers = async (req, res) => {
         address: fetched_peers[j].address,
         port: fetched_peers[j].port,
       });
-      if (peer || fetched_peers[j].port === req.app.locals.port) {
+      if (peer || fetched_peers[j].port === req.app.locals.config.port) {
         console.log("Peer already in DB");
         continue;
       }
@@ -134,6 +136,7 @@ const discover_peers = async (req, res) => {
 };
 
 module.exports = {
+  clear_db,
   add_node,
   create_txs_pool,
   propagate_block,

@@ -1,0 +1,33 @@
+<div class="container-transactions">
+  <div class="transactions">
+    <h1><%=title%></h1>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Sender</th>
+          <th scope="col">Recepient</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Timestamp</th>
+          <th scope="col">Signature</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%- include('../../components/transaction') %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="add-transactions-form">
+    <form
+      autocomplete="off"
+      class="add-transactions"
+      method="POST"
+      action="/transaction/add_bunch_of_transactions"
+    >
+      <input id="txs_num" name="num_txs" placeholder="Number of Transactions" />
+
+      <button class="submit-button"" type="submit">Generate</button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,18 @@
+button {
+  width: 170px;
+  height: 55px;
+  border: 2px solid black;
+  padding: 15px;
+  background-color: transparent;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 15px;
+  transition: background-color 0.5s ease, font-size 0.5s ease, color 0.5s ease;
+}
+
+button:hover {
+  cursor: pointer;
+  font-size: 20px;
+  border: 0;
+  background-color: #333;
+  color: #fff;
+}

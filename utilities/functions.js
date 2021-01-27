@@ -1,5 +1,6 @@
 const http = require("http");
 const isReachable = require("is-reachable");
+const qs = require("qs");
 
 const mongoose = require("mongoose");
 
@@ -7,35 +8,48 @@ const Peer = mongoose.model("Peer");
 const Block = mongoose.model("Block");
 const Transaction = mongoose.model("Transaction");
 
-const propagate_to_peers = (peers, post_data, api, method) => {
-  let return_str = "";
-  for (i in peers) {
-    if (!peers[i].status) continue;
-    const options = {
-      host: peers[i].address,
-      port: peers[i].port,
-      path: api,
-      method: method,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Content-Length": Buffer.byteLength(post_data),
-      },
-    };
+const propagate_to_peers = async (_post_data, api, method) => {
+  return new Promise(async (done) => {
+    const peers = await check_peers_availability();
+    const post_data = qs.stringify(JSON.parse(JSON.stringify(_post_data)));
+    if (peers === undefined || peers.length === 0) {
+      return "No peers available";
+    }
+    let return_str = "";
+    let counter = 0;
+    for (i in peers) {
+      if (!peers[i].status) {
+        return_str += `Peer: ${peers[i].address}:${peers[i].port} not available\n`;
+        continue;
+      }
+      counter += 1;
+      const options = {
+        host: peers[i].address,
+        port: peers[i].port,
+        path: api,
+        method: method,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Length": Buffer.byteLength(post_data),
+        },
+      };
 
-    let str = "";
+      let str = "";
 
-    const request = http.request(options, (response) => {
-      response.on("data", (chunk) => {
-        str += chunk.toString("utf-8");
+      const request = http.request(options, (response) => {
+        response.on("data", (chunk) => {
+          str += chunk.toString("utf-8");
+        });
+        response.on("end", () => {
+          counter -= 1;
+          if (counter === 0) done(return_str);
+        });
       });
-      response.on("end", () => {});
-    });
-    request.write(post_data);
-    return_str += `Peer: ${peers[i].address}:${peers[i].port} has been contacted through the API: ${api}\n`;
-    request.end();
-  }
-
-  return return_str;
+      request.write(post_data);
+      return_str += `Peer: ${peers[i].address}:${peers[i].port} has been contacted through the API: ${api}\n`;
+      request.end();
+    }
+  });
 };
 
 const save_transactions_from_single_peer = async ({
@@ -136,6 +150,24 @@ const save_blocks_from_single_peer = async (address, port, id, max_id) => {
     }
     //return the block array
   });
+};
+
+const check_peers_availability = async () => {
+  const peers = await Peer.find({});
+  if (peers.length !== 0) {
+    peers.map(async (peer) => {
+      if (await isReachable(`${peer.address}:${peer.port}`)) {
+        peer.status = true;
+      } else {
+        peer.status = false;
+      }
+      await Peer.updateOne(
+        { address: peer.address, port: peer.port },
+        { $set: { status: peer.status } }
+      );
+    });
+  }
+  return peers;
 };
 
 module.exports = {

@@ -1,17 +1,22 @@
 const express = require("express");
+const app = express();
+
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
+//set the global variables
+const configuration = require("./config");
+app.locals.config = configuration.config.peers[1];
+console.log({ config: app.locals.config });
+
 const mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost/blockchainDB2", {
+mongoose.connect(`mongodb://localhost/${app.locals.config.db}`, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
 const BlockSchema = require("./models/blockModel");
 const Block = mongoose.model("Block", BlockSchema);
-const BlockchainSchema = require("./models/blockchainModel");
-const Blockchain = mongoose.model("Blockchain", BlockchainSchema);
 const TransactionSchema = require("./models/transactionModel");
 const Transaction = mongoose.model("Transaction", TransactionSchema);
 const NodeSchema = require("./models/nodeModel");
@@ -24,7 +29,6 @@ const PeerSchema = require("./models/peerModel");
 const Peer = mongoose.model("Peer", PeerSchema);
 
 const routes = require("./routes");
-const app = express();
 const path = require("path");
 
 app.set("view engine", "ejs");
@@ -42,32 +46,27 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/", routes());
 
-app.listen(3001, async () => {
-  await config();
-  console.log("Server listening on port 3001");
+app.listen(app.locals.config.port, async () => {
+  await initial_setup();
+  console.log(`Server listening on port ${app.locals.config.port}`);
 });
 
-const config = async () => {
+const initial_setup = async () => {
   return new Promise(async (resolve) => {
-    //set the global variable port
-    app.locals.port = 3001;
-
     // Recover the max_id and previous_hash from db
     console.log("- Recovering max_id and previous_hash from local blockchain");
-    app.locals.max_id;
-    app.locals.previous_hash;
-    const blocks = await Block.find();
+
+    const blocks = await Block.find({});
     if (blocks.length === 0) {
       console.log("STILL NO BLOCKS HERE");
     } else {
       app.locals.max_id = blocks.reduce((a, b) => {
-        return Math.max(a.id, b.id) === a.id ? a : b;
-      }).id;
-      const block = await Block.findOne({ id: app.locals.max_id });
-      const last_block = new Block(block);
+        return Math.max(a.header.id, b.header.id) === a.header.id ? a : b;
+      }).header.id;
+      const block = await Block.findOne({ "header.id": app.locals.max_id });
       console.log("  last block is: ");
-      console.log(last_block);
-      app.locals.previous_hash = last_block.hash();
+      console.log(block);
+      app.locals.previous_hash = block.hash();
       console.log(`   max_id: ${app.locals.max_id}`);
       console.log(`   previous_hash: ${app.locals.previous_hash}`);
     }
