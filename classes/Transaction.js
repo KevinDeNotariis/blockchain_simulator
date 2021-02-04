@@ -33,10 +33,15 @@ class Transaction {
   }
 
   sign(sender_private_key) {
+    if (ec.keyFromSecret(sender_private_key).getPublic("hex") !== this.sender) {
+      this.signature = "INVALID";
+      return false;
+    }
     this.signature = ec
       .keyFromSecret(sender_private_key)
       .sign(this.hash())
       .toHex();
+    return true;
   }
 
   verify() {

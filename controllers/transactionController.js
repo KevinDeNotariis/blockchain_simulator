@@ -6,9 +6,9 @@ const functions = require("../utilities/functions");
 const Transaction = mongoose.model("Transaction");
 const User = mongoose.model("User");
 const Peer = mongoose.model("Peer");
+const Block = mongoose.model("Block");
 
 const TransactionClass = require("../classes/Transaction");
-const Block = require("../classes/Block");
 
 const add_bunch_of_transactions = async (req, res) => {
   console.log(`Number of transactions to be added: ${req.body.num_txs}`);
@@ -58,11 +58,9 @@ const get_transactions_pool = async (req, res) => {
 
 const save_transaction = async (req, res, next) => {
   console.log(
-    "\n\nINSIDE save_transaction, ATTEMPTING TO SAVE THE TRANSACTION INTO DB"
+    "\n\nINSIDE save_transaction, ATTEMPTING TO SAVE THE TRANSACTION IN THE POOL"
   );
-  const transaction = new Transaction({
-    transaction: req.body.transaction,
-  });
+  const transaction = new Transaction(req.body.transaction);
 
   await transaction.save();
   console.log("  - transaction saved successfully");
@@ -71,42 +69,67 @@ const save_transaction = async (req, res, next) => {
 };
 
 const validate_transaction = async (req, res, next) => {
+  const transaction = new TransactionClass(req.body.transaction);
   //Info printing
   console.log(
     "\n\nINSIDE validate_transaction, RECEIVED THE FOLLOWING TRANSACTION:"
   );
-  console.log(req.body.transaction);
+
+  console.log("  - checking the validity of the signature in the transaction");
+
+  if (!transaction.verify()) {
+    console.log("Transaction is not valid");
+    return res.status(400).json({ message: "Transaction is not valid" });
+  }
+
+  console.log("    signature valid.");
+
+  console.log(transaction);
   console.log("  - validation of the transaction");
   console.log("  - checking whether this node has already the transaction");
 
   //First check whether the node has already the transaction in the transactions collection
-  tx = await Transaction.findOne({
-    id: req.body.transaction.id,
+  const tx = await Transaction.findOne({
+    id: transaction.id,
   });
   if (tx) {
     console.log("Already got that transaction");
-    return res
-      .status(400)
-      .json({ message: "Already got that transaction in the pool" });
+    return res.status(400).json({ message: "Transaction already in the pool" });
   }
 
   //Check if the transaction is in one of the blocks that the peer has
-  let block = await Block.find({ "transactions.id": req.body.transaction.id });
+  let block = await Block.findOne({ "transactions.id": transaction.id });
   if (block) {
     console.log("The transaction is already in a block");
     return res.status(400).json({ message: "Transaction already in a block" });
   }
 
-  console.log("  the node does not have the transaction.");
+  console.log("    the node does not have the transaction.");
 
-  const transaction = new TransactionClass(req.body.transaction);
+  //Check whether the sender has sufficient funds to make the transaction
+  console.log("  - checking whether the sender has sufficient funds");
+  const validated_balance = await functions.get_balance_from_user_validated(
+    transaction.sender
+  );
+  const in_pool_balance = await functions.get_balance_from_user_in_pool(
+    transaction.sender,
+    transaction.timestamp
+  );
 
-  console.log("  - checking the validity of the signature in the transaction");
+  const balance =
+    validated_balance.gained +
+    in_pool_balance.gained -
+    (validated_balance.spent + in_pool_balance.spent);
+  console.log(
+    `    sender has available: ${balance} and the required amount for the transaction is: ${transaction.amount}`
+  );
 
-  if (!transaction.verify())
-    return res.status(400).json({ message: "Transaction is not valid" });
+  if (balance < transaction.amount) {
+    console.log("    not enough funds for the sender");
+    return res.status(400).json({ message: "Sender has not enough funds" });
+  }
+  console.log("    the sender has enough funds");
 
-  console.log("    signature valid.");
   console.log("exiting the middleware");
 
   next();
@@ -117,9 +140,9 @@ const propagate_transaction = async (req, res) => {
     "\n\nINSIDE propagate_transaction, ATTEMPTING TO SEND TRANSACTION TO PEERS"
   );
   const return_str = await functions.propagate_to_peers(
-    req.body.transaction,
-    "/transaction/accept_transaction",
-    "POST"
+    tx,
+    "/transaction",
+    "PUT"
   );
 
   console.log("  - transaction sent.");

@@ -4,7 +4,7 @@ const config = {
       port: 3001,
       setup: false,
       public_key:
-        "a84bc05b20efa2a8d8ab917f22025891f6326c645566be6b0bca9a95abf12a3",
+        "a84bc05b20efa2a8d8ab917f22025891f6326c645566be6b0bca9a95abf12a3e",
       private_key:
         "dab84cdd005060e9d8af919ec78ea59f2349753b6a9dd9c1215e50c63a60b623",
       db: "blockchainDB",

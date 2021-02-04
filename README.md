@@ -75,9 +75,13 @@ From the home page you can navigate to `/blockchain` by clicking on the `Blockch
 
 ## APIs
 
+<div style="font-weight:900; font-size: 20px; text-align: center">
+   <a href="./API_doc.md">See the documentation API_doc for the complete list of APIs</a> (Still under construction)
+</div>
+
 ### Mining
 
-Now that everything is set, you can mine a block in the blockchain. What you have to do is make a POST request for `http://localhost:3000/node/mine`. This call will:
+Now that everything is set, you can mine a block in the blockchain. What you have to do is make a POST request for `http://localhost:3001/node/mine`. This call will:
 
 1. Take some transactions from the `transactions` collection of `blockchainDB` database.
 
@@ -87,7 +91,7 @@ Now that everything is set, you can mine a block in the blockchain. What you hav
 
 1. Once mined, the bock will be added to the blockchain, namely to the `blocks` collection of the `blockchainDB` database.
 
-1. The block will be propagated to the other peers, in this case to the other two nodes, namely to `http://localhost:3001` and `http://localhost:3002`.
+1. The block will be propagated to the other peers, in this case to the other two nodes, namely to `http://localhost:3002` and `http://localhost:3003`.
 
 1. The receiving nodes, upon receving the Block, will validate it:
    1. Does this node already have the block?
@@ -98,19 +102,24 @@ Now that everything is set, you can mine a block in the blockchain. What you hav
 
 ### Generate Transactions
 
-If you want to generate your custom transactions, you need to make a POST request to `http://localhost:3000/user/generate_transaction` (or analogously for the other nodes with `3001` and `3002` instead of `3000`) with the following JSON body:
+If you want to generate your custom transactions, you need to make a POST request to `http://localhost:3000/user/generate_transaction` (or analogously for the other nodes with `3002` and `3003` instead of `3001`) with the following JSON body:
 
 ```json
 {
-  "sender": <public_key of the sender>,
-  "receiver": <public_key of the receiver>,
-  "amount": <amount to be sent>
+  "transaction_gen": {
+    "sender": <public_key of the sender>,
+    "receiver": <public_key of the receiver>,
+    "amount": <amount to be sent>,
+    "sender_private_key": <private_key of the sender>
+  }
 }
 ```
 
 this API will do the following:
 
 1. Generate the transaction with the information provided.
+
+1. Validate the transaction.
 
 1. Save the transaction in the `transactions` collection of the `blockchainDB` database (or analogously for the other nodes).
 
@@ -119,10 +128,6 @@ this API will do the following:
    1. Validate the transaction received, namely check if the signature is valid and if they already have this transaction.
    1. Save the transaction in their `transactions` collection of their blockchain database.
    1. Propagate the transaction to their peers.
-
-### Get the blockchain
-
-You can always look at the collection `blocks` in the `blockchainDB` to view all the blocks, or you can make a GET request to: `http://localhost:3000/blockchain/get_blockchain`.
 
 # Features
 

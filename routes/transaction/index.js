@@ -21,25 +21,29 @@ module.exports = () => {
     });
   });
 
-  router.post(
-    "/add_bunch_of_transactions",
-    transactionController.add_bunch_of_transactions
-  );
-
-  router.post(
-    "/accept_transaction",
+  router.put(
+    "/",
     transactionController.validate_transaction,
     transactionController.save_transaction,
     transactionController.propagate_transaction
   );
 
   router.post(
-    "/add_transaction",
+    "/",
     userController.generate_transaction,
+    transactionController.validate_transaction,
     transactionController.save_transaction,
     (req, res) => {
-      return res.status(200).json(req.body);
+      return res.status(200).json({
+        message: "Transaction added",
+        transaction: req.body.transaction,
+      });
     }
+  );
+
+  router.post(
+    "/add_bunch_of_transactions",
+    transactionController.add_bunch_of_transactions
   );
 
   router.get("/get_transactions", transactionController.get_transactions);
@@ -52,6 +56,14 @@ module.exports = () => {
   router.get(
     "/get_transactions_from_all_peers",
     transactionController.get_transactions_from_all_peers
+  );
+
+  router.get(
+    "/validate_transaction",
+    transactionController.validate_transaction,
+    (req, res) => {
+      return res.status(200).json({ message: "Transaction Valid" });
+    }
   );
 
   return router;
