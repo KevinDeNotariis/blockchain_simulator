@@ -204,7 +204,7 @@ The response, if everything went good, should contain a message and a list of th
 
 ## GET api/transaction/from_all_peers
 
-This API will search for peer available, and for each peer, it will call `GET /api/transaction/from_peer` to get the transactions from that peer.
+This API will search for available peers, and for each peer, it will call `GET /api/transaction/from_peer` to get the transactions from that peer.
 
 Response example for 2 transactions fetched from peer `localhost:3002` and 3 transactions fetched from `lcoalhost:3003`:
 
