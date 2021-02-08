@@ -7,13 +7,13 @@ const EdDSA = require("elliptic").eddsa;
 const ec = new EdDSA("ed25519");
 
 const User = mongoose.model("User");
-const Transaction = mongoose.model("Transaction");
 
 const TransactionClass = require("../classes/Transaction");
 
 const functions = require("../utilities/functions");
 
 const add_bunch_of_users = async (req, res) => {
+  let users_pub_keys = [];
   let user;
   for (let i = 0; i < req.body.num_users; i++) {
     const secretWords = randomWords(12);
@@ -32,11 +32,16 @@ const add_bunch_of_users = async (req, res) => {
     user = new User({
       public_key: public_key,
       private_key: private_key,
+      secret_words: secretWords,
     });
-    const doc = await user.save();
+    users_pub_keys.push(public_key);
+    await user.save();
   }
 
-  return res.status(200).send("Users inserted");
+  return res.status(200).json({
+    users: users_pub_keys,
+    message: "Users inserted",
+  });
 };
 
 const generate_keys = (req, res) => {
@@ -58,9 +63,12 @@ const generate_keys = (req, res) => {
   console.log(private_key);
 
   return res.status(200).json({
-    secretWords: secretWords,
-    public_key: public_key,
-    private_key: private_key,
+    message: "Keys generated",
+    keys: {
+      secretWords: secretWords,
+      public_key: public_key,
+      private_key: private_key,
+    },
   });
 };
 
@@ -112,18 +120,13 @@ const get_balance = async (req, res, next) => {
   const data_validated = await functions.get_balance_from_user_validated(
     user.public_key
   );
-  const data_in_pool = await functions.get_balance_from_user_in_pool(
-    user.public_key
-  );
 
-  const balance =
-    data_validated.gained +
-    data_in_pool.gained -
-    (data_validated.spent + data_in_pool.spent);
+  const balance = data_validated.gained - data_validated.spent;
 
   console.log(`   balance: ${balance}`);
 
   return res.status(200).json({
+    user: user,
     balance: balance,
   });
 };

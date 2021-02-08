@@ -352,12 +352,9 @@ describe("MTree Class - Merkle Tree", () => {
     const node_3 = new MTreeNode("hash_3");
     const node_4 = new MTreeNode("hash_4");
     const sorted_input = MTreeNode.sort([node_1, node_2, node_3, node_4]);
-    console.log(sorted_input);
 
     const node_12 = new MTreeNode("", sorted_input[0], sorted_input[1]);
     const node_34 = new MTreeNode("", sorted_input[2], sorted_input[3]);
-
-    console.log([node_12, node_34]);
 
     const root = new MTreeNode("", node_12, node_34);
 

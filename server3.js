@@ -55,20 +55,14 @@ const initial_setup = async () => {
   return new Promise(async (resolve) => {
     // Recover the max_id and previous_hash from db
     console.log("- Recovering max_id and previous_hash from local blockchain");
-
-    const blocks = await Block.find({});
-    if (blocks.length === 0) {
-      console.log("STILL NO BLOCKS HERE");
-    } else {
-      app.locals.max_id = blocks.reduce((a, b) => {
-        return Math.max(a.header.id, b.header.id) === a.header.id ? a : b;
-      }).header.id;
-      const block = await Block.findOne({ "header.id": app.locals.max_id });
-      console.log("  last block is: ");
-      console.log(block);
-      app.locals.previous_hash = block.hash();
-      console.log(`   max_id: ${app.locals.max_id}`);
-      console.log(`   previous_hash: ${app.locals.previous_hash}`);
+    const last = await Hash.find({}).sort({ block_id: -1 }).limit(1);
+    if (!last) console.log("No blocks yet");
+    else if (last.length === 0) console.log("No blocks yet");
+    else {
+      app.locals.max_id = last[0].block_id;
+      app.locals.previous_hash = last[0].block_hash;
+      console.log(`  max_id = ${app.locals.max_id}`);
+      console.log(`  previous_hash = ${app.locals.previous_hash}`);
     }
     resolve();
   });

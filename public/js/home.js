@@ -6,7 +6,7 @@ $(".set-up-button").on("click", function (event) {
 
   $.ajax({
     type: "GET",
-    url: "/set_up",
+    url: "/api/set_up",
   }).then((res) => {
     $(this).prop("disabled", false);
     $("#myModal").children().text("Simulation is ready");
@@ -25,5 +25,9 @@ $(".set-up-button").on("click", function (event) {
         $new.remove();
       }, 3000);
     }
+
+    $(".log").children().remove();
+    console.log(res.log);
+    $(".log").append(`<pre>${JSON.stringify(res.log, null, 2)}</pre>`);
   });
 });

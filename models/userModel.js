@@ -11,6 +11,10 @@ const UserModel = new Schema({
     type: String,
     required: true,
   },
+  secret_words: {
+    type: Array,
+    required: true,
+  },
 });
 
 module.exports = UserModel;

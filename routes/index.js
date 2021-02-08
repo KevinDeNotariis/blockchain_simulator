@@ -6,8 +6,7 @@ const blockRoute = require("./block");
 const blockchainRoute = require("./blockchain");
 const userRoute = require("./user");
 const peerRoute = require("./peer");
-
-const setUpRoute = require("./set_up");
+const apiRoute = require("./api");
 
 const router = express.Router();
 
@@ -27,7 +26,7 @@ module.exports = () => {
   router.use("/blockchain", blockchainRoute());
   router.use("/user", userRoute());
   router.use("/peer", peerRoute());
-  router.use("/set_up", setUpRoute());
+  router.use("/api", apiRoute());
 
   return router;
 };

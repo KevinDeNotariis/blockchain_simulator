@@ -39,9 +39,9 @@ const generate_users = (req, res, next) => {
     )
   );
   const options = {
-    host: "localhost",
+    host: req.app.locals.config.address,
     port: req.app.locals.config.port,
-    path: "/user/add_bunch_of_users",
+    path: "/api/user/bunch_of",
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -54,7 +54,7 @@ const generate_users = (req, res, next) => {
       ret += chunk.toString("utf-8");
     });
     response.on("end", () => {
-      console.log(ret);
+      console.log(JSON.parse(ret).message);
       next();
     });
   });
@@ -77,8 +77,6 @@ const generate_transactions = async (req, res, next) => {
       initial_sum
     );
     tx.sign(configuration.config.coinbase.private);
-    //const tx_db = new Transaction(tx);
-    //await tx_db.save();
     txs.push(tx);
   }
 
@@ -131,8 +129,6 @@ const generate_transactions = async (req, res, next) => {
       );
       tx.sign(peers[i].private_key);
       req.transactions.push(tx);
-      //const tx_db = new Transaction(tx);
-      //await tx_db.save();
     }
   }
   next();
@@ -173,41 +169,42 @@ const mine_first_blocks = async (req, res, next) => {
 
 const send_to_peers = async (req, res, next) => {
   const blocks = await Block.find({});
-  const transactions = await Transaction.find({});
   const hashes = await Hash.find({});
   const users = await User.find({});
-  let ret = "";
-  ret += await functions.propagate_to_peers(" ", "/set_up/clear_db", "POST");
-  ret += "\n";
-  ret += await functions.propagate_to_peers(
-    { users: users },
-    "/set_up/add_users",
+  let ret = {};
+  ret.clear_db = await functions.propagate_to_peers_wait_res(
+    " ",
+    "/api/set_up/clear_db",
     "POST"
   );
-  ret += "\n";
-  ret += await functions.propagate_to_peers(
-    { transactions: transactions },
-    "/set_up/add_transactions",
-    "POST"
-  );
-  ret += "\n";
-  ret += await functions.propagate_to_peers(
+
+  for (let i = 10; i < 101; i += 10) {
+    ret.add_users = await functions.propagate_to_peers_wait_res(
+      { users: users.slice(i - 10, i) },
+      "/api/set_up/add_users",
+      "POST"
+    );
+  }
+  ret.add_blocks = await functions.propagate_to_peers_wait_res(
     { blocks: blocks },
-    "/set_up/add_blocks",
+    "/api/set_up/add_blocks",
     "POST"
   );
-  ret += "\n";
-  ret += await functions.propagate_to_peers(
+
+  ret.add_hashes = await functions.propagate_to_peers_wait_res(
     { hashes: hashes },
-    "/set_up/add_hashes",
+    "/api/set_up/add_hashes",
     "POST"
   );
-  ret += "\n";
-  ret += await functions.propagate_to_peers("", "/set_up/add_peers", "POST");
+  ret.add_peers = await functions.propagate_to_peers_wait_res(
+    "",
+    "/api/set_up/add_peers",
+    "POST"
+  );
 
   req.app.locals.config.setup = true;
-  console.log(ret);
-  next();
+  console.log(JSON.stringify(ret, null, 2));
+  return res.status(200).json({ message: "Done", log: ret });
 };
 
 const clear_db = async (req, res) => {
@@ -224,6 +221,7 @@ const add_users = async (req, res) => {
 
 const add_transactions = async (req, res) => {
   console.log("Adding transactions");
+  console.log(req.body.transactions);
   await Transaction.insertMany(req.body.transactions);
   return res.status(200).json({ message: "Transactions added" });
 };
@@ -246,15 +244,16 @@ const add_hashes = async (req, res) => {
 };
 
 const add_peers = async (req, res, next) => {
+  console.log("Adding peers");
   configuration.config.peers.map(async (peer) => {
     if (peer.port !== req.app.locals.config.port) {
       const peer_db = new Peer({
-        address: "localhost",
+        address: peer.address,
         port: peer.port,
-        status: await isReachable(`localhost:${peer.port}`),
+        status: await isReachable(`${peer.address}:${peer.port}`),
         type: "undefined",
       });
-      peer_db.save();
+      await peer_db.save();
     }
   });
   next();

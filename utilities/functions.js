@@ -11,24 +11,19 @@ const Peer = mongoose.model("Peer");
 const Block = mongoose.model("Block");
 const Transaction = mongoose.model("Transaction");
 
-/**
- * @typedef {Object} PeerRes
- * @property {Peer} peer
- * @property {Object} res - Response from the peer
- */
+const TransactionClass = require("../classes/Transaction");
 
 /**
- * @typedef {Object} PropagateReturn
- * @property {String[]} contacted - String informing that the peer has been contacted
- * @property {PeerRes[]} peers_res
+ * @typedef {Object} PropagateRet
+ * @property {string[]} contacted - Contains which peers has been contacted
  */
 
 /**
  * Allows to propagate the given data to peers in the network
- * @param {Object} _post_data - The data needs to be propagated to peers
- * @param {String} api  - The API through which the peers need to be contacted
- * @param {String} method - The method, i.e. GET, POST, PUT, etc..
- * @returns {PropagateReturn}
+ * @param {object} _post_data - The data needs to be propagated to peers
+ * @param {string} api  - The API through which the peers need to be contacted
+ * @param {string} method - The method, i.e. GET, POST, PUT, etc..
+ * @returns {Promise:PropagateRet}
  */
 const propagate_to_peers = async (_post_data, api, method) => {
   return new Promise(async (done) => {
@@ -39,9 +34,7 @@ const propagate_to_peers = async (_post_data, api, method) => {
     }
     let return_obj = {
       contacted: [],
-      peers_res: [],
     };
-    let counter = peers.length;
     for (i in peers) {
       const options = {
         host: peers[i].address,
@@ -60,61 +53,125 @@ const propagate_to_peers = async (_post_data, api, method) => {
         response.on("data", (chunk) => {
           peer_res += chunk.toString("utf-8");
         });
+        response.on("end", () => {});
+      });
+      request.write(post_data);
+      return_obj.contacted.push(
+        `Peer: ${peers[i].address}:${peers[i].port} has been contacted through the API: ${method} ${api}`
+      );
+      request.end();
+    }
+    done(return_obj);
+  });
+};
+
+const propagate_to_peers_wait_res = async (_post_data, api, method) => {
+  return new Promise(async (done) => {
+    const peers = await check_peers_availability();
+    const post_data = qs.stringify(JSON.parse(JSON.stringify(_post_data)));
+    if (peers === undefined || peers.length === 0) {
+      done("No peers available");
+    }
+    let return_obj = {
+      contacted: [],
+      peers_res: [],
+    };
+    let counter = peers.length;
+    for (i in peers) {
+      const current_peer = peers[i];
+      const options = {
+        host: current_peer.address,
+        port: current_peer.port,
+        path: api,
+        method: method,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Length": Buffer.byteLength(post_data),
+        },
+      };
+
+      let peer_res = "";
+
+      const request = http.request(options, (response) => {
+        response.on("data", (chunk) => {
+          peer_res += chunk.toString("utf-8");
+        });
         response.on("end", () => {
-          counter -= 1;
           return_obj.peers_res.push({
-            peer: peers[i],
+            peer: { address: current_peer.address, port: current_peer.port },
             res: JSON.parse(peer_res),
           });
-          if (counter === 0) done(return_obj);
+          counter--;
+          if (counter === 0) {
+            done(return_obj);
+          }
         });
       });
       request.write(post_data);
       return_obj.contacted.push(
-        `Peer: ${peers[i].address}:${peers[i].port} has been contacted through the API: ${api}\n`
+        `Peer: ${current_peer.address}:${current_peer.port} has been contacted through the API: ${method} ${api}`
       );
       request.end();
     }
   });
 };
 
-const save_transactions_from_single_peer = async ({ address, port }) => {
+/**
+ * @typedef {Object} FetchTxsRet
+ * @property {string} message - Says whether the peer was available or not
+ * @property {Transaction[]} transacitons
+ */
+
+/**
+ * Check if the peer in input is available, if so it will fetch the transactions from that peer and return those that are not already in the DB.
+ * @param {Object} peer - A peer to fetch transactions from
+ * @param {string} peer.address - Address of the peer
+ * @param {string} peer.port - Port of the peer
+ * @returns {Promise:FetchTxsRet}
+ */
+const fetch_transactions_from_single_peer = async ({ address, port }) => {
   return new Promise(async (done) => {
     if (await isReachable(`${address}:${port}`)) {
+      let ret_obj = {
+        message: "",
+        transactions: [],
+      };
       const fetched_transactions = JSON.parse(
         await fetch_transactions(address, port)
       );
       for (let i in fetched_transactions) {
         const transaction = await Transaction.findOne({
           id: fetched_transactions[i].id,
-          hash: fetched_transactions[i].hash,
         });
+        console.log(`Transaction with id: ${fetched_transactions[i].id}`);
         if (!transaction) {
-          const new_transaction = new Transaction(fetched_transactions[i]);
-          if (new_transaction.verify()) {
-            await new_transaction.save();
-            console.log("  Transaction added");
-          } else {
-            console.log("  Transaction is invalid");
-          }
+          const new_transaction = new TransactionClass(fetched_transactions[i]);
+          console.log("  --> added");
+          ret_obj.transactions.push(new_transaction);
         } else {
-          console.log("  Transaction Already in DB");
+          console.log("  --> already in DB");
         }
       }
+      ret_obj.message = `Transactions fetched From Peer: ${address}:${port}`;
+      done(ret_obj);
     } else {
-      done(false);
+      done({ message: "Peer not available" });
     }
-    done(true);
   });
 };
 
+/**
+ *
+ * @param {string} address
+ * @param {string} port
+ */
 const fetch_transactions = async (address, port) => {
   return new Promise((resolve) => {
     let ret = "";
     const options = {
       host: address,
       port: port,
-      path: "/transaction/get_transactions",
+      path: "/api/transaction",
       method: "GET",
     };
     const request = http.request(options, (response) => {
@@ -169,24 +226,28 @@ const save_blocks_from_single_peer = async (address, port, id, max_id) => {
   });
 };
 
-const check_peers_availability = async () => {
-  const peers = await Peer.find({});
-  let ret = [];
-  if (peers.length !== 0) {
-    peers.map(async (peer) => {
-      if (await isReachable(`${peer.address}:${peer.port}`)) {
-        peer.status = true;
-        ret.push(peer);
-      } else {
-        peer.status = false;
-      }
-      await Peer.updateOne(
-        { address: peer.address, port: peer.port },
-        { $set: { status: peer.status } }
+const check_peers_availability = () => {
+  return new Promise(async (done) => {
+    const peers = await Peer.find({});
+    let ret = [];
+    if (peers.length !== 0) {
+      await Promise.all(
+        peers.map(async (peer) => {
+          if (await isReachable(`${peer.address}:${peer.port}`)) {
+            peer.status = true;
+            ret.push(peer);
+          } else {
+            peer.status = false;
+          }
+          await Peer.updateOne(
+            { address: peer.address, port: peer.port },
+            { $set: { status: peer.status } }
+          );
+        })
       );
-    });
-  }
-  return ret;
+    }
+    done(ret);
+  });
 };
 
 const get_money_spent_by_user_validated = async (user_pub_key) => {
@@ -320,7 +381,9 @@ const verify_keys = async (public_key, private_key) => {
 
 module.exports = {
   propagate_to_peers,
-  save_transactions_from_single_peer,
+  propagate_to_peers_wait_res,
+  fetch_transactions_from_single_peer,
+  check_peers_availability,
   save_blocks_from_single_peer,
   get_balance_from_user_validated,
   get_money_gained_by_user_in_pool,

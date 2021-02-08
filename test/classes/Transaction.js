@@ -85,7 +85,8 @@ describe("Transaction Class", () => {
 
   context("The sign method", () => {
     it("Should add a signature::string in the transaction", () => {
-      const tx = new Transaction("sender_addr", "receiver_addr", 10);
+      const key = ec.keyFromSecret("sender_private_key");
+      const tx = new Transaction(key.getPublic("hex"), "receiver_addr", 10);
 
       tx.sign.should.be.instanceOf(Function);
 
@@ -95,9 +96,19 @@ describe("Transaction Class", () => {
       tx.signature.should.be.a("string");
     });
 
+    it("Should add a signature='INVALID' for an invalid pair of public and private sender keys", () => {
+      const tx = new Transaction("sender_addr", "receiver_addr", 10);
+      tx.sign("not the private key of sender addr");
+
+      tx.signature.should.be.eq("INVALID");
+    });
+
     it("Should add a signature depending on the sender_private_key passed to it", () => {
-      const tx_1 = new Transaction("sender_addr", "receiver_addr", 10);
-      const tx_2 = new Transaction("sender_addr", "receiver_addr", 10);
+      const key_1 = ec.keyFromSecret("sender_private_key_1");
+      const key_2 = ec.keyFromSecret("sender_private_key_2");
+
+      const tx_1 = new Transaction(key_1.getPublic("hex"), "receiver_addr", 10);
+      const tx_2 = new Transaction(key_2.getPublic("hex"), "receiver_addr", 10);
 
       tx_1.sign("sender_private_key_1");
       tx_2.sign("sender_private_key_2");
@@ -106,11 +117,14 @@ describe("Transaction Class", () => {
     });
 
     it("Should add a unique signature for different transactions", () => {
-      const tx_1 = new Transaction("sender_addr", "receiver_addr", 10);
-      const tx_2 = new Transaction("sender_addr", "receiver_addr", 10);
+      const key_1 = ec.keyFromSecret("sender_private_key_1");
+      const key_2 = ec.keyFromSecret("sender_private_key_2");
 
-      tx_1.sign("sender_private_key");
-      tx_2.sign("sender_private_key");
+      const tx_1 = new Transaction(key_1.getPublic("hex"), "receiver_addr", 10);
+      const tx_2 = new Transaction(key_2.getPublic("hex"), "receiver_addr", 10);
+
+      tx_1.sign("sender_private_key_1");
+      tx_2.sign("sender_private_key_2");
 
       tx_1.signature.should.not.be.eq(tx_2.signature);
     });

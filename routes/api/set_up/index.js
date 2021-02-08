@@ -2,9 +2,9 @@ const express = require("express");
 
 const router = express.Router();
 
-const setUpController = require("../../controllers/setUpController");
+const setUpController = require("../../../controllers/setUpController");
 
-const blockchainController = require("../../controllers/blockchainController");
+const blockchainController = require("../../../controllers/blockchainController");
 
 module.exports = () => {
   router.get(
@@ -16,10 +16,7 @@ module.exports = () => {
     setUpController.generate_transactions,
     setUpController.mine_first_blocks,
     setUpController.add_peers,
-    setUpController.send_to_peers,
-    (req, res) => {
-      return res.status(200).json({ message: "Done" });
-    }
+    setUpController.send_to_peers
   );
 
   router.post("/clear_db", setUpController.clear_db);

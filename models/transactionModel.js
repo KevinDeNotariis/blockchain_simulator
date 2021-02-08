@@ -49,7 +49,9 @@ TransactionSchema.methods.hash = function () {
 };
 
 TransactionSchema.methods.verify = function () {
-  return ec.keyFromPublic(this.sender, "hex").verify(this.hash, this.signature);
+  return ec
+    .keyFromPublic(this.sender, "hex")
+    .verify(this.hash(), this.signature);
 };
 
 TransactionSchema.methods.set_hash = function () {

@@ -1,7 +1,10 @@
 const crypto = require("crypto");
 const mongoose = require("mongoose");
+const qs = require("qs");
+const http = require("http");
 
 const functions = require("../utilities/functions");
+const dbManagement = require("../utilities/dbManagement");
 
 const Transaction = mongoose.model("Transaction");
 const User = mongoose.model("User");
@@ -45,7 +48,7 @@ const add_bunch_of_transactions = async (req, res) => {
 };
 
 const get_transactions = async (req, res) => {
-  const transactions = await Transaction.find({});
+  const transactions = await dbManagement.get_all_transactions();
 
   return res.status(200).json(transactions);
 };
@@ -74,6 +77,8 @@ const validate_transaction = async (req, res, next) => {
   console.log(
     "\n\nINSIDE validate_transaction, RECEIVED THE FOLLOWING TRANSACTION:"
   );
+  console.log(transaction);
+  console.log("  - validation of the transaction");
 
   console.log("  - checking the validity of the signature in the transaction");
 
@@ -84,8 +89,6 @@ const validate_transaction = async (req, res, next) => {
 
   console.log("    signature valid.");
 
-  console.log(transaction);
-  console.log("  - validation of the transaction");
   console.log("  - checking whether this node has already the transaction");
 
   //First check whether the node has already the transaction in the transactions collection
@@ -140,44 +143,120 @@ const propagate_transaction = async (req, res) => {
     "\n\nINSIDE propagate_transaction, ATTEMPTING TO SEND TRANSACTION TO PEERS"
   );
   const return_str = await functions.propagate_to_peers(
-    tx,
-    "/transaction",
+    { transaction: req.body.transaction },
+    "/api/transaction",
     "PUT"
   );
 
   console.log("  - transaction sent.");
 
-  return res.status(200).send(return_str);
+  return res.status(200).send({
+    propagation_res: return_str,
+    transaction: req.body.transaction,
+  });
 };
 
 const get_transactions_from_peer = async (req, res) => {
-  if (await functions.save_transactions_from_single_peer(req.body.peer)) {
-    return res.status(200).json({
-      message: `Transactions fetched From Peer: ${req.body.address}:${req.body.port}`,
-    });
+  console.log(req.body);
+  const txs = await functions.fetch_transactions_from_single_peer(
+    req.body.peer
+  );
+  if (txs.message === "Peer not available") {
+    return res.status(503).json(txs);
+  } else if (txs.transactions.length !== 0) {
+    let ret = [];
+    let counter = txs.transactions.length;
+    for (i in txs.transactions) {
+      let this_transaction = txs.transactions[i];
+      const post_data = qs.stringify(
+        JSON.parse(JSON.stringify({ transaction: this_transaction }))
+      );
+      const options = {
+        host: req.app.locals.config.address,
+        port: req.app.locals.config.port,
+        path: "/api/transaction/no_propagation",
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Length": Buffer.byteLength(post_data),
+        },
+      };
+      let res_from_api = "";
+
+      const request = http.request(options, (response) => {
+        response.on("data", (chunk) => {
+          res_from_api += chunk.toString("utf-8");
+        });
+        response.on("end", () => {
+          let res_from_api_json = JSON.parse(res_from_api);
+          res_from_api_json.transaction = this_transaction.id;
+          ret.push(res_from_api_json);
+          counter--;
+          if (counter === 0) {
+            return res.status(200).json(ret);
+          }
+        });
+      });
+      request.write(post_data);
+      request.end();
+    }
   } else {
-    return res.status(503).json({ message: "Peer not available" });
+    return res.status(200).json({
+      message: "Transactions are already in DB",
+    });
   }
 };
 
 const get_transactions_from_all_peers = async (req, res) => {
-  const peers = await Peer.find({});
-
-  if (peers.length === 0) {
-    return res.status(400).json({ message: "No peers found" });
-  }
-
-  for (let i in peers) {
-    if (await functions.save_transactions_from_single_peer(peers[i])) {
-      console.log(
-        `Transactions fetched From Peer: ${peers[i].address}:${peers[i].port}`
+  const peers = await functions.check_peers_availability();
+  console.log(peers);
+  if (peers.length === 0)
+    return res.stauts(400).json({ message: "No peers available" });
+  else {
+    let counter = peers.length;
+    let ret_obj = [];
+    for (let i in peers) {
+      const current_peer = peers[i];
+      const data = qs.stringify(
+        JSON.parse(
+          JSON.stringify({
+            peer: current_peer,
+          })
+        )
       );
-    } else {
-      console.log(`Peer: ${peers[i].address}:${peers[i].port} not available`);
+      const options = {
+        host: req.app.locals.config.address,
+        port: req.app.locals.config.port,
+        path: "/api/transaction/from_peer",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Length": Buffer.byteLength(data),
+        },
+      };
+      let peer_res = "";
+      const request = http.request(options, (response) => {
+        response.on("data", (chunk) => {
+          peer_res += chunk.toString("utf-8");
+        });
+        response.on("end", () => {
+          counter--;
+          ret_obj.push({
+            peer: {
+              address: current_peer.address,
+              port: current_peer.port,
+            },
+            res: JSON.parse(peer_res),
+          });
+          if (counter === 0) {
+            return res.status(200).json(ret_obj);
+          }
+        });
+      });
+      request.write(data);
+      request.end();
     }
   }
-
-  return res.status(200).json({ message: "Transactions fetched from peers" });
 };
 
 module.exports = {

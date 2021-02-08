@@ -27,3 +27,19 @@
 - [ ] implement the forking of the blockchain, namely:
   - [ ] the possibility of having more blocks with the same id (aka height)
   - [ ] the fact that a block may arrive before the previous one --> orphan blocks
+- [ ] implement an object - PropagateData - that stores the peers it has already visited, in order to not send it to the same peers all over again.
+- [x] refactor routes:
+  - [x] refactor transaction routes
+  - [x] refactor user routes
+  - [x] refactor peer routes
+  - [x] refactor block routes
+  - [x] refactor blockchain routes
+  - [x] refactor node routes
+- [ ] refactor APIs:
+  - [x] transaction
+  - [x] user
+  - [x] peer
+  - [ ] block
+  - [ ] blockchain
+  - [ ] node
+- [ ] implement communication protocols for transactions and blocks propagation. When a peer wants to send a block, it may just send the header, the receiver will check it, and if it does not already have it and everything is fine, then the sender may send the whole block.

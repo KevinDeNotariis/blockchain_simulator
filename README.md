@@ -60,12 +60,12 @@ Click the `Set Up` button, what it will do is the following:
 1. Take the peers in the `config.js` file and add them to the database;
 1. Send every collection in the database (`blocks`, `transactions`, `users`, `hashes`) to the other peers, namely to localhost:3002 and localhost:3003. This involves making the following POST request to these addresses:
 
-   1. POST `/set_up/clear_db`;
-   1. POST `/set_up/add_users`;
-   1. POST `/set_up/add_transactions`;
-   1. POST `/set_up/add_blocks`;
-   1. POST `/set_up/add_hashes`;
-   1. POST `/set_up/add_peers`;
+   1. POST `api/set_up/clear_db`;
+   1. POST `api/set_up/add_users`;
+   1. POST `api/set_up/add_transactions`;
+   1. POST `api/set_up/add_blocks`;
+   1. POST `api/set_up/add_hashes`;
+   1. POST `api/set_up/add_peers`;
 
 Each of `/add_users`, `/add_transactions`, `add_blocks` and `add_hashes` routes receive in the body of the request object, their corresponding array of objects and add them to the database.
 
@@ -81,7 +81,7 @@ From the home page you can navigate to `/blockchain` by clicking on the `Blockch
 
 ### Mining
 
-Now that everything is set, you can mine a block in the blockchain. What you have to do is make a POST request for `http://localhost:3001/node/mine`. This call will:
+Now that everything is set, you can mine a block in the blockchain. What you have to do is make a POST request for `http://localhost:3001/api/node/mine`. This call will:
 
 1. Take some transactions from the `transactions` collection of `blockchainDB` database.
 
@@ -102,7 +102,7 @@ Now that everything is set, you can mine a block in the blockchain. What you hav
 
 ### Generate Transactions
 
-If you want to generate your custom transactions, you need to make a POST request to `http://localhost:3000/user/generate_transaction` (or analogously for the other nodes with `3002` and `3003` instead of `3001`) with the following JSON body:
+If you want to generate your custom transactions, you need to make a `POST` request to `http://localhost:3001/api/transaction` (or analogously for the other nodes with `3002` and `3003` instead of `3001`) with the following JSON body:
 
 ```json
 {

@@ -1,6 +1,7 @@
 const config = {
   peers: [
     {
+      address: "localhost",
       port: 3001,
       setup: false,
       public_key:
@@ -10,6 +11,7 @@ const config = {
       db: "blockchainDB",
     },
     {
+      address: "localhost",
       port: 3002,
       setup: false,
       public_key:
@@ -19,6 +21,7 @@ const config = {
       db: "blockchainDB2",
     },
     {
+      address: "localhost",
       port: 3003,
       setup: false,
       public_key:
@@ -37,7 +40,7 @@ const config = {
     initial_amount_range: 100,
   },
   coinbase: {
-    public: "a608d4b58e5e370fc00139b2104556540691fbfd07fcaacedb688475849ba8be",
+    public: "b67a2d14f2613558b2410508fdd4b40a751a60f239cc9f95a43cae15f39565b7",
     private: "coinbase",
   },
   max_txs_in_block: 6,
