@@ -164,10 +164,21 @@ const propagate_block = async (req, res) => {
   return res.status(200).json({ message: ret, block: req.body.block });
 };
 
+const get_last = async (req, res, next) => {
+  const max_id = await dbManagement.get_max_id();
+
+  const block = await Block.findOne({ "header.id": max_id });
+
+  req.body.block = block.header;
+
+  next();
+};
+
 module.exports = {
   checks,
   create_block,
   mine_block,
   save_block,
   propagate_block,
+  get_last,
 };

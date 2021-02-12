@@ -44,4 +44,4 @@
   - [x] blockchain
   - [x] node
 - [ ] implement communication protocols for transactions and blocks propagation. When a peer wants to send a block, it may just send the header, the receiver will check it, and if it does not already have it and everything is fine, then the sender may send the whole block.
-- [ ] remove max_id and previous_hash from app.locals everywhere (and user db functions to extract it when necessary)
+- [ ] remove max_id and previous_hash from app.locals everywhere (and user db functions to extract them when necessary)

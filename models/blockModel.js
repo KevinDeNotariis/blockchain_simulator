@@ -6,6 +6,7 @@ const Schema = mongoose.Schema;
 const TransactionSchema = require("./transactionModel");
 
 const BlockHeaderSchema = new Schema({
+  _id: false,
   id: {
     type: Number,
     required: true,
