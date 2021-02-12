@@ -67,3 +67,5 @@ const initial_setup = async () => {
     resolve();
   });
 };
+
+module.exports = app;

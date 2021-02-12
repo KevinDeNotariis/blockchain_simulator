@@ -31,22 +31,9 @@ class Block {
       mTree.fill_matrix();
       this.header.txs_root = mTree.root.hash;
     } else {
-      const {
-        _id,
-        _previous_hash,
-        _tsx_root,
-        _nonce,
-        _difficulty,
-        _timestamp,
-        _transactions,
-      } = { ...id };
-      this.header.id = _id;
-      this.header.previous_hash = _previous_hash;
-      this.header.txs_root = _tsx_root;
-      this.header.nonce = _nonce;
-      this.header.difficulty = _difficulty;
-      this.header.timestamp = _timestamp;
-      this.transactions = _transactions;
+      console.log(id);
+      this.header = id.header;
+      this.transactions = id.transactions;
     }
   }
 
@@ -62,6 +49,10 @@ class Block {
       hash: this.hash(),
       duration: this.header.timestamp - time_start,
     };
+  }
+
+  mined() {
+    return parseInt(this.hash(), 16) <= this.header.difficulty;
   }
 
   hash() {

@@ -2,9 +2,9 @@
 
 - [x] change the implementation of the models following the new /classes
 - [ ] change everywhere the implementation of Blocks, Transactions, etc.. following the new classes in /classes
-- [ ] implement propagation of blocks
-  - [ ] implement a `PUT /block` API which will be called from other peers when they want to propagate their blocks.
-    - [ ] implement the validation of a block middleware, which includes:
+- [x] implement propagation of blocks
+  - [x] implement a `PUT /block` API which will be called from other peers when they want to propagate their blocks.
+    - [x] implement the validation of a block middleware, which includes:
       1. check whether the block id (the height) is higher, lower or equals to the current one,
       1. check whether the `previous_hash` corresponds to the hash of the block with the previous id.
       1. check whether the `hash` satisfies the difficulty constraint.
@@ -15,6 +15,7 @@
   - [x] check for transactions in the pool.
 - [ ] implement the priority system for transactions in the pool
 - [ ] implement different types of nodes, those that may not require the full blockchain, but still can verify transactions (thanks to the Merkle tree structure)
+- [ ] check and update the availability of peers when a node wakes up
 - [ ] implement the reward for mining a block as a transaction (the first) from the coinbase to the miner for a fixed value of money:
   - [ ] implement, when validating a block, that the first transaction is a coinbase transaction
   - [ ] check that the amount of the transaction from the coinbase to the miner is the right amount
@@ -35,11 +36,12 @@
   - [x] refactor block routes
   - [x] refactor blockchain routes
   - [x] refactor node routes
-- [ ] refactor APIs:
+- [x] refactor APIs:
   - [x] transaction
   - [x] user
   - [x] peer
-  - [ ] block
-  - [ ] blockchain
-  - [ ] node
+  - [x] block
+  - [x] blockchain
+  - [x] node
 - [ ] implement communication protocols for transactions and blocks propagation. When a peer wants to send a block, it may just send the header, the receiver will check it, and if it does not already have it and everything is fine, then the sender may send the whole block.
+- [ ] remove max_id and previous_hash from app.locals everywhere (and user db functions to extract it when necessary)

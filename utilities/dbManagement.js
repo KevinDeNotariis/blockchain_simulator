@@ -69,6 +69,20 @@ const get_users = async () => {
   });
 };
 
+const get_max_id = async () => {
+  return new Promise(async (done) => {
+    const blocks = await Hash.find({});
+    done(blocks.map((elem) => elem.block_id).reduce((a, b) => Math.max(a, b)));
+  });
+};
+
+const get_previous_hash = async () => {
+  return new Promise(async (done) => {
+    const max_id = await get_max_id();
+    done((await Hash.findOne({ block_id: max_id })).block_hash);
+  });
+};
+
 module.exports = {
   clear_db,
   get_blockchain,
@@ -76,4 +90,6 @@ module.exports = {
   get_all_transactions,
   get_peers,
   get_users,
+  get_max_id,
+  get_previous_hash,
 };

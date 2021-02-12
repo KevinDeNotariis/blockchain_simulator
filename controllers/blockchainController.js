@@ -58,15 +58,15 @@ const get_blockchain = (req, res) => {
 const add_block = async (req, res, next) => {
   console.log("INSIDE add_block of BLOCKCHAIN CONTROLLER");
   console.log("  - trying to add the following block:");
-  console.log(req.body);
-  const block = new Block(req.body);
+  console.log(req.body.block.header);
+  const block = new Block(req.body.block);
 
   await block.save();
 
   console.log("  - block added successfully to the blockchain");
   console.log("  - updating the max_id and previous_hash:");
 
-  req.app.locals.max_id = block.id;
+  req.app.locals.max_id = block.header.id;
   req.app.locals.previous_hash = block.hash();
 
   console.log(`    max_id: ${req.app.locals.max_id}`);

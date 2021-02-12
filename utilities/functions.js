@@ -160,6 +160,28 @@ const fetch_transactions_from_single_peer = async ({ address, port }) => {
   });
 };
 
+const fetch_from_peer = async ({ address, port }, path, data) => {
+  return new Promise(async (done) => {
+    let ret = "";
+    const options = {
+      host: address,
+      port: port,
+      path: path,
+      method: "GET",
+    };
+    const request = http.request(options, (response) => {
+      response.on("data", (chunk) => {
+        ret += chunk.toString("utf-8");
+      });
+      response.on("end", () => {
+        done(ret);
+      });
+    });
+    if (data) request.write(data);
+    request.end();
+  });
+};
+
 /**
  *
  * @param {string} address
@@ -379,10 +401,40 @@ const verify_keys = async (public_key, private_key) => {
   return ec.keyFromSecret(private_key).getPublic("hex") === public_key;
 };
 
+const partial_verify_transaction = async (address, port, transaction) => {
+  return new Promise((done) => {
+    const data = qs.stringify(
+      JSON.parse(JSON.stringify({ transaction: transaction }))
+    );
+    const options = {
+      host: address,
+      port: port,
+      path: "/api/transaction/validation/partial",
+      method: "GET",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Length": Buffer.byteLength(data),
+      },
+    };
+    let ret = "";
+    const request = http.request(options, (response) => {
+      response.on("data", (chunk) => {
+        ret += chunk.toString("utf-8");
+      });
+      response.on("end", () => {
+        done(JSON.parse(ret));
+      });
+    });
+    request.write(data);
+    request.end();
+  });
+};
+
 module.exports = {
   propagate_to_peers,
   propagate_to_peers_wait_res,
   fetch_transactions_from_single_peer,
+  fetch_from_peer,
   check_peers_availability,
   save_blocks_from_single_peer,
   get_balance_from_user_validated,
@@ -390,4 +442,5 @@ module.exports = {
   get_money_spent_by_user_in_pool,
   get_balance_from_user_in_pool,
   verify_keys,
+  partial_verify_transaction,
 };

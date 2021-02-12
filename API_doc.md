@@ -9,6 +9,12 @@
    1. [POST api/user/bunch_of](#post-api/user/bunch_of)
    1. [GET api/user/generate_keys](#get-api/user/generate_keys)
    1. [GET api/user/balance](#get-api/user/balance)
+1. [Peers](#peers)
+   1. [GET api/peer](#get-api/peer)
+   1. [PUT api/peer](#put-api/peer)
+   1. [DELETE api/peer](#delete-api/peer)
+   1. [PUT api/peer/discover](#put-api/peer/discover)
+1. [Nodes](#nodes)
 
 # Transactions
 
@@ -37,7 +43,7 @@ This request will pass through the following middlewares:
    └──────────────────────────────────────┘
                       ↓
 ┌─────────────────────────────────────────────┐
-│ transactionController.validate_transaction  │
+│ transactionController.complete_validation   │
 └─────────────────────────────────────────────┘
                       ↓
   ┌─────────────────────────────────────────┐
@@ -49,14 +55,14 @@ This request will pass through the following middlewares:
 └──────────────────────────────────────────────┘
 ```
 
-| Middleware                                 | Steps (in this sequence)                                                                                                                                                | Return if not passed                                         |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| userController.generate_transaction        | Check whether the `sender_private_key` is really what it claims to be (namely it will check that the public key generated using the private key coincide with `sender`) | Status 400 with "message": "Keys do not correspond"          |
-| userController.generate_transaction        | Sign it                                                                                                                                                                 |                                                              |
-| transactionController.validate_transaction | Check whether the signature is valid (it should, since the node itself signed it, but this part is in a common `validate_transaction` middleware)                       | Status 400 with "message": "Transaction is not valid"        |
-| transactionController.validate_transaction | Check whether the node has already the transaction in the pool                                                                                                          | Status 400 with "message": "Transaction already in the pool" |
-| transactionController.validate_transaction | Check whether the node has already the transaction validated in a block                                                                                                 | Status 400 with "message": "Transaction already in a block"  |
-| transactionController.validate_transaction | Check whether the sender has sufficient funds                                                                                                                           | Status 400 with "message": "Sender has not enough funds"     |
+| Middleware                                | Steps (in this sequence)                                                                                                                                                | Return if not passed                                         |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| userController.generate_transaction       | Check whether the `sender_private_key` is really what it claims to be (namely it will check that the public key generated using the private key coincide with `sender`) | Status 400 with "message": "Keys do not correspond"          |
+| userController.generate_transaction       | Sign it                                                                                                                                                                 |                                                              |
+| transactionController.complete_validation | Check whether the signature is valid (it should, since the node itself signed it, but this part is in a common `complete_validation` middleware)                        | Status 400 with "message": "Transaction is not valid"        |
+| transactionController.complete_validation | Check whether the node has already the transaction in the pool                                                                                                          | Status 400 with "message": "Transaction already in the pool" |
+| transactionController.complete_validation | Check whether the node has already the transaction validated in a block                                                                                                 | Status 400 with "message": "Transaction already in a block"  |
+| transactionController.complete_validation | Check whether the sender has sufficient funds                                                                                                                           | Status 400 with "message": "Sender has not enough funds"     |
 
 If everything is fine, it will save the transaction in the transaction pool (in the `transactions` collection) and then contact other peers. The final response should be something like the following (for two peers available)
 
@@ -102,7 +108,7 @@ This request will pass through the following middlewares:
 
 ```
 ┌─────────────────────────────────────────────┐
-│ transactionController.validate_transaction  │
+│ transactionController.complete_validation   │
 └─────────────────────────────────────────────┘
                       ↓
   ┌─────────────────────────────────────────┐
@@ -303,3 +309,140 @@ response example:
   "balance": 98402
 }
 ```
+
+## GET api/peer
+
+Returns all the peers in the database.
+
+Response example:
+
+```json
+{
+  "message": "Peers fetched from DB",
+  "peers": [
+    {
+      "_id": "60215b58559c124698a54219",
+      "address": "localhost",
+      "port": 3002,
+      "status": true,
+      "type": "undefined",
+      "__v": 0
+    },
+    {
+      "_id": "60215b58559c124698a5421a",
+      "address": "localhost",
+      "port": 3003,
+      "status": true,
+      "type": "undefined",
+      "__v": 0
+    }
+  ]
+}
+```
+
+## PUT api/peer
+
+Allows to save a peer in the database. The body of the request should contain the peer to save:
+
+body example:
+
+```json
+{
+  "peer": {
+    "address": "localhost",
+    "port": 3005,
+    "type": "undefined"
+  }
+}
+```
+
+Response example:
+
+```json
+{
+  "message": "Peer added",
+  "peer": {
+    "address": "localhost",
+    "port": 3005,
+    "type": "undefined"
+  }
+}
+```
+
+## DELETE api/peer
+
+Delete a peer from the database. In case no peer is found in the DB, it will return status 400.
+
+Body example:
+
+```json
+{
+  "peer": {
+    "address": "localhost",
+    "port": 3005,
+    "type": "undefined"
+  }
+}
+```
+
+Response example:
+
+1. For a deletion went well:
+
+   ```json
+   {
+     "message": "Peer deleted",
+     "peer": {
+       "address": "localhost",
+       "port": 3005,
+       "type": "undefined"
+     }
+   }
+   ```
+
+1. For a non-existing peer:
+
+   ```json
+   {
+     "message": "Peer not in DB",
+     "peer": {
+       "address": "localhost",
+       "port": 3005,
+       "type": "undefined"
+     }
+   }
+   ```
+
+## PUT api/peer/discover
+
+Check for the available peers and fetch their peers. If not already in DB, it will save them.
+
+Response example:
+
+1. For some peers actually discovered:
+
+   ```json
+   {
+     "message": "Peers discovered",
+     "peers": [
+       {
+         "address": "localhost",
+         "port": 3005,
+         "type": "undefined"
+       },
+       {
+         "address": "localhost",
+         "port": 3006,
+         "type": "undefined"
+       }
+     ]
+   }
+   ```
+
+1. For no peers discovered
+   ```json
+   {
+     "message": "No peers discovered",
+     "peers": []
+   }
+   ```

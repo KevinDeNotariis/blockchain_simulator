@@ -71,11 +71,22 @@ const save_transaction = async (req, res, next) => {
   next();
 };
 
-const validate_transaction = async (req, res, next) => {
+/**
+ * Validate a transaction completely, namely:
+ * 1. Checks if its signature is valid
+ * 2. Checks if the node has already the transaction in a block
+ * 3. Checks if the node has already the transaction in the pool
+ * 4. Checks whether the sender has enough funds
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+
+const complete_validation = async (req, res, next) => {
   const transaction = new TransactionClass(req.body.transaction);
-  //Info printing
+
   console.log(
-    "\n\nINSIDE validate_transaction, RECEIVED THE FOLLOWING TRANSACTION:"
+    "\n\nINSIDE complete_validation, RECEIVED THE FOLLOWING TRANSACTION:"
   );
   console.log(transaction);
   console.log("  - validation of the transaction");
@@ -138,6 +149,71 @@ const validate_transaction = async (req, res, next) => {
   next();
 };
 
+/**
+ * Validate a transaction which is in a block received from a peer:
+ * 1. Checks whether the signature is valid
+ * 2. Checks whether the node has that transaction in a block
+ * 2. Checks whether the sender has enough funds
+ * @param {} req
+ * @param {*} res
+ * @param {*} next
+ */
+const partial_validation = async (req, res, next) => {
+  const transaction = new TransactionClass(req.body.transaction);
+
+  console.log(
+    "\n\nINSIDE partial_validation, RECEIVED THE FOLLOWING TRANSACTION:"
+  );
+  console.log(transaction);
+  console.log("  - validation of the transaction");
+
+  console.log("  - checking the validity of the signature in the transaction");
+
+  if (!transaction.verify()) {
+    console.log("Transaction is not valid");
+    return res.status(400).json({ message: "Transaction is not valid" });
+  }
+
+  console.log("    signature valid.");
+
+  //Check if the transaction is in one of the blocks that the peer has
+  let block = await Block.findOne({ "transactions.id": transaction.id });
+  if (block) {
+    console.log("The transaction is already in a block");
+    return res.status(400).json({ message: "Transaction already in a block" });
+  }
+
+  console.log("    the node does not have the transaction in a block.");
+
+  //Check whether the sender has sufficient funds to make the transaction
+  console.log("  - checking whether the sender has sufficient funds");
+  const validated_balance = await functions.get_balance_from_user_validated(
+    transaction.sender
+  );
+  const in_pool_balance = await functions.get_balance_from_user_in_pool(
+    transaction.sender,
+    transaction.timestamp
+  );
+
+  const balance =
+    validated_balance.gained +
+    in_pool_balance.gained -
+    (validated_balance.spent + in_pool_balance.spent);
+  console.log(
+    `    sender has available: ${balance} and the required amount for the transaction is: ${transaction.amount}`
+  );
+
+  if (balance < transaction.amount) {
+    console.log("    not enough funds for the sender");
+    return res.status(400).json({ message: "Sender has not enough funds" });
+  }
+  console.log("    the sender has enough funds");
+
+  console.log("exiting the middleware");
+
+  next();
+};
+
 const propagate_transaction = async (req, res) => {
   console.log(
     "\n\nINSIDE propagate_transaction, ATTEMPTING TO SEND TRANSACTION TO PEERS"
@@ -155,9 +231,15 @@ const propagate_transaction = async (req, res) => {
     transaction: req.body.transaction,
   });
 };
-
+/**
+ * Fetch the transactions not already in the DB from the peer
+ * in the body of the request. Then for each transaction calls
+ * 'PUT /api/transaction/no_propagation' to validate and eventually
+ * save the transactions in the DB without propagating them to peers.
+ * @param {*} req
+ * @param {*} res
+ */
 const get_transactions_from_peer = async (req, res) => {
-  console.log(req.body);
   const txs = await functions.fetch_transactions_from_single_peer(
     req.body.peer
   );
@@ -206,10 +288,15 @@ const get_transactions_from_peer = async (req, res) => {
     });
   }
 };
-
+/**
+ * Will check the availability of the peers saved in the DB,
+ * after that, will call 'GET /api/transaction/from_peer' for each
+ * active peer.
+ * @param {*} req
+ * @param {*} res
+ */
 const get_transactions_from_all_peers = async (req, res) => {
   const peers = await functions.check_peers_availability();
-  console.log(peers);
   if (peers.length === 0)
     return res.stauts(400).json({ message: "No peers available" });
   else {
@@ -260,7 +347,8 @@ const get_transactions_from_all_peers = async (req, res) => {
 };
 
 module.exports = {
-  validate_transaction,
+  complete_validation,
+  partial_validation,
   save_transaction,
   add_bunch_of_transactions,
   propagate_transaction,

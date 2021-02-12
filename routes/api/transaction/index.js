@@ -6,12 +6,14 @@ const userController = require("../../../controllers/userController");
 
 const router = express.Router();
 
+const validationRoute = require("./validation");
+
 module.exports = () => {
   router.get("/", transactionController.get_transactions_pool);
 
   router.put(
     "/",
-    transactionController.validate_transaction,
+    transactionController.complete_validation,
     transactionController.save_transaction,
     transactionController.propagate_transaction
   );
@@ -19,14 +21,14 @@ module.exports = () => {
   router.post(
     "/",
     userController.generate_transaction,
-    transactionController.validate_transaction,
+    transactionController.complete_validation,
     transactionController.save_transaction,
     transactionController.propagate_transaction
   );
 
   router.put(
     "/no_propagation",
-    transactionController.validate_transaction,
+    transactionController.complete_validation,
     transactionController.save_transaction,
     (req, res) => {
       return res.status(200).json({ message: "Transaction saved" });
@@ -42,15 +44,7 @@ module.exports = () => {
     transactionController.get_transactions_from_all_peers
   );
 
-  router.get(
-    "/validate",
-    transactionController.validate_transaction,
-    (req, res) => {
-      return res.status(200).json({
-        transaction: req.body.transaction,
-        message: "Transaction valid",
-      });
-    }
-  );
+  router.use("/validation", validationRoute());
+
   return router;
 };

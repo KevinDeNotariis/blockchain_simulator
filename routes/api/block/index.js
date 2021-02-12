@@ -5,9 +5,20 @@ const blockController = require("../../../controllers/blockController");
 const router = express.Router();
 
 module.exports = () => {
-  router.post("/mine_block", blockController.mine_block);
+  router.put(
+    "/",
+    blockController.checks,
+    blockController.save_block,
+    blockController.propagate_block
+  );
 
-  router.get("/get_blocks_from_id", blockController.get_blocks_from_id);
+  router.get("/validate", blockController.checks, (req, res) => {
+    return res.status(200).json({
+      message: "Block valid",
+      validation: req.body.validation,
+      block: req.body.block,
+    });
+  });
 
   return router;
 };
