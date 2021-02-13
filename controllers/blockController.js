@@ -174,6 +174,20 @@ const get_last = async (req, res, next) => {
   next();
 };
 
+const get_block_by_id = async (req, res, next) => {
+  const id = req.params.id;
+  const block = await Block.findOne({ "header.id": id });
+  if (!block)
+    return res.status(400).json({ message: "No block with such id", id: id });
+
+  const ret_block = new BlockClass();
+
+  ret_block.init(block);
+
+  req.body.block = ret_block;
+  next();
+};
+
 module.exports = {
   checks,
   create_block,
@@ -181,4 +195,5 @@ module.exports = {
   save_block,
   propagate_block,
   get_last,
+  get_block_by_id,
 };

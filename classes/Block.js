@@ -31,7 +31,6 @@ class Block {
       mTree.fill_matrix();
       this.header.txs_root = mTree.root.hash;
     } else {
-      console.log(id);
       this.header = id.header;
       this.transactions = id.transactions;
     }

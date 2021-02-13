@@ -14,7 +14,7 @@ module.exports = () => {
     nodeController.create_txs_pool,
     blockController.create_block,
     blockController.mine_block,
-    blockchainController.add_block,
+    blockController.save_block,
     blockController.propagate_block
   );
 

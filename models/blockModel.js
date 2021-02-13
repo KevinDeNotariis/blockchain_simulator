@@ -39,7 +39,7 @@ const BlockSchema = new Schema({
     required: true,
   },
   transactions: {
-    type: [TransactionSchema],
+    type: [{ type: TransactionSchema, _id: false }],
     required: true,
   },
 });
@@ -53,36 +53,5 @@ BlockSchema.methods.hash = function () {
       String(this.header.difficulty)
   ).toString();
 };
-/*
-BlockSchema.methods.hash_from_tr = function (transactions) {
-  return sha256(
-    this.nonce + transactions + this.previous_hash + this.id
-  ).toString();
-};
-
-BlockSchema.methods.mine_block = function (target = this.target) {
-  console.log("INSIDE THE mine_block METHOD OF BLOCK CLASS");
-  console.log("  Minining the following block: ");
-  console.log("  id: " + this.id);
-  console.log("  previous_hash: " + this.previous_hash);
-  console.log("  transactions: ");
-  let transactions = "";
-  this.transactions.map((elem) => {
-    transactions += elem.serialize();
-    console.log("                " + elem.id);
-  });
-  console.log(" - Computing the hash in order to reach the target: " + target);
-  let hash;
-  while (true) {
-    this.nonce++;
-    hash = this.hash_from_tr(transactions);
-    if (parseInt(hash, 16) < target) {
-      break;
-    }
-  }
-  console.log(" - Hash found: " + this.hash());
-  console.log(" - With nonce: " + this.nonce);
-  return this;
-};*/
 
 module.exports = BlockSchema;

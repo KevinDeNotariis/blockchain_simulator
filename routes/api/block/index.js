@@ -26,5 +26,11 @@ module.exports = () => {
     });
   });
 
+  router.get("/:id", blockController.get_block_by_id, (req, res) => {
+    return res
+      .status(200)
+      .json({ message: "Block retrieved", block: req.body.block });
+  });
+
   return router;
 };
