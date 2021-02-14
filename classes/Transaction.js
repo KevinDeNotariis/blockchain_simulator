@@ -8,9 +8,9 @@ class Transaction {
     if (typeof sender === "object") {
       this.sender = sender.sender;
       this.receiver = sender.receiver;
-      this.amount = sender.amount;
+      this.amount = Number(sender.amount);
       this.id = sender.id;
-      this.timestamp = sender.timestamp;
+      this.timestamp = Number(sender.timestamp);
       this.signature = sender.signature;
     } else {
       this.sender = sender;

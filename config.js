@@ -44,6 +44,7 @@ const config = {
     private: "coinbase",
   },
   max_txs_in_block: 6,
+  mining_reward: 100,
 };
 
 module.exports = { config };

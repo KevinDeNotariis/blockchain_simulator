@@ -102,7 +102,12 @@ const generate_transaction = async (req, res, next) => {
     req.body.transaction_gen.amount
   );
 
-  transaction.sign(req.body.transaction_gen.sender_private_key);
+  if (!transaction.sign(req.body.transaction_gen.sender_private_key)) {
+    console.log("Error in signing the transaction");
+    return res
+      .stastus(400)
+      .json({ message: "Error in signing the transaction" });
+  }
 
   req.body.transaction = transaction;
   delete req.body.transaction_gen;

@@ -12,6 +12,7 @@ const Peer = mongoose.model("Peer");
 const Block = mongoose.model("Block");
 
 const TransactionClass = require("../classes/Transaction");
+const configuration = require("../config");
 
 const add_bunch_of_transactions = async (req, res) => {
   console.log(`Number of transactions to be added: ${req.body.num_txs}`);
@@ -40,7 +41,12 @@ const add_bunch_of_transactions = async (req, res) => {
     if (!user) {
       return res.status(400).message({ message: "User not found" });
     }
-    transaction.sign(user.private_key);
+    if (!transaction.sign(user.private_key)) {
+      console.log.og("Error in signing the transaction");
+      return res
+        .status(400)
+        .json({ message: "Error in signing the transaction" });
+    }
     await transaction.save();
     console.log("Added the above transaction");
   }
@@ -185,30 +191,46 @@ const partial_validation = async (req, res, next) => {
 
   console.log("    the node does not have the transaction in a block.");
 
-  //Check whether the sender has sufficient funds to make the transaction
-  console.log("  - checking whether the sender has sufficient funds");
-  const validated_balance = await functions.get_balance_from_user_validated(
-    transaction.sender
-  );
-  const in_pool_balance = await functions.get_balance_from_user_in_pool(
-    transaction.sender,
-    transaction.timestamp
-  );
+  console.log("  - Checking whether the sender is the coinbase");
+  //Check whether the transaction is from the coinbase, if it is, do not
+  //check for funds
+  if (transaction.sender === configuration.config.coinbase.public) {
+    console.log("   sender is the coinbase, no need to check for funds");
+    console.log(
+      "  - Checking whether the amount from the coinbase (mining reward, is the right amount"
+    );
+    if (transaction.amount !== configuration.config.mining_reward) {
+      console.log(transaction);
+      console.log("     mining reward is not correct");
+      return res.status(400).json({ message: "Mining reward not correct" });
+    }
+    console.log("    mining reward is correct");
+  } else {
+    console.log("  sender is not the coibase");
+    //Check whether the sender has sufficient funds to make the transaction
+    console.log("  - checking whether the sender has sufficient funds");
+    const validated_balance = await functions.get_balance_from_user_validated(
+      transaction.sender
+    );
+    const in_pool_balance = await functions.get_balance_from_user_in_pool(
+      transaction.sender,
+      transaction.timestamp
+    );
 
-  const balance =
-    validated_balance.gained +
-    in_pool_balance.gained -
-    (validated_balance.spent + in_pool_balance.spent);
-  console.log(
-    `    sender has available: ${balance} and the required amount for the transaction is: ${transaction.amount}`
-  );
+    const balance =
+      validated_balance.gained +
+      in_pool_balance.gained -
+      (validated_balance.spent + in_pool_balance.spent);
+    console.log(
+      `    sender has available: ${balance} and the required amount for the transaction is: ${transaction.amount}`
+    );
 
-  if (balance < transaction.amount) {
-    console.log("    not enough funds for the sender");
-    return res.status(400).json({ message: "Sender has not enough funds" });
+    if (balance < transaction.amount) {
+      console.log("    not enough funds for the sender");
+      return res.status(400).json({ message: "Sender has not enough funds" });
+    }
+    console.log("    the sender has enough funds");
   }
-  console.log("    the sender has enough funds");
-
   console.log("exiting the middleware");
 
   next();

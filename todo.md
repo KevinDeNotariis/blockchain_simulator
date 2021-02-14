@@ -16,10 +16,12 @@
 - [ ] implement the priority system for transactions in the pool
 - [ ] implement different types of nodes, those that may not require the full blockchain, but still can verify transactions (thanks to the Merkle tree structure)
 - [ ] check and update the availability of peers when a node wakes up
-- [ ] implement the reward for mining a block as a transaction (the first) from the coinbase to the miner for a fixed value of money:
-  - [ ] implement, when validating a block, that the first transaction is a coinbase transaction
-  - [ ] check that the amount of the transaction from the coinbase to the miner is the right amount
-    - [ ] implement a fixed or variable amount to give as a reward to miners
+- [x] implement the reward for mining a block as a transaction (the first) from the coinbase to the miner for a fixed value of money:
+  - [x] implement, when validating a block, that the first transaction is a coinbase transaction
+  - [x] in the validaiton chain of transactions exclude the checking for funds when the sender is the coinbase
+  - [x] make sure that only the first transaction in a block is from the coinbase
+  - [x] check that the amount of the transaction from the coinbase to the miner is the right amount
+    - [x] implement a fixed or variable amount to give as a reward to miners
 - [ ] implement the log in the front-end
 - [ ] when a node receive a valid block, it needs to take the transactions validated in the block out from their transactions collection
 - [ ] when fetching blocks, the node will try to fetch from the peer with the longest blockchain

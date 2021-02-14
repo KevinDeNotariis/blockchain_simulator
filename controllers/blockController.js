@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const http = require("http");
 
 const Hash = mongoose.model("Hash");
 const Block = mongoose.model("Block");
@@ -73,8 +72,33 @@ const checks = async (req, res, next) => {
   }
 
   console.log("    difficulty okay.");
-  console.log("  - checking whether the previous_hash is in the blockchain");
 
+  console.log(
+    "  - Checking whether the first transaction is from the coinbase"
+  );
+  if (block.transactions[0].sender !== configuration.config.coinbase.public) {
+    console.log("    first transaciton is not from the coinbase");
+    return res
+      .status(400)
+      .json({ message: "First transaction is not from the coinbase" });
+  }
+
+  console.log("    first transaciton is from the coinbase");
+
+  console.log("  - Checking whether no other transaction is from the coinbase");
+  for (let i = 1; i < block.transactions.length; i++) {
+    if (block.transactions[i].sender === configuration.config.coinbase.public) {
+      console.log(
+        "    found another transaction form the coinbase, this cannot happen"
+      );
+      return res
+        .status(400)
+        .json({ message: "Found another transaction from the coinbase" });
+    }
+  }
+  console.log("    no other transactions are from the coinbase");
+
+  console.log("  - checking whether the previous_hash is in the blockchain");
   // check if the previous_hash corresponds to a block in the local blockchain
   // by checking whether this hash is in the HashSchema
   const prev_hash = await Hash.findOne({
@@ -121,6 +145,16 @@ const checks = async (req, res, next) => {
     })
   );
   console.log(validation);
+
+  for (let i in validation) {
+    if (validation[i].message !== "Transaction valid") {
+      console.log("A transaction is not valid, received the following message");
+      console.log(validation[i]);
+      return res
+        .status(400)
+        .json({ message: "A transaction in the block is not valid" });
+    }
+  }
 
   console.log("    transactions are valid.");
 
