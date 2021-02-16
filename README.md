@@ -41,7 +41,7 @@
   npm run dev3
   ```
 
-  to start the second node (listening on `localhost:3003`)
+  to start the third node (listening on `localhost:3003`)
 
 ## Initialization
 
