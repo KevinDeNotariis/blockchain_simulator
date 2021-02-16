@@ -1,7 +1,7 @@
 ## TODO list
 
 - [x] change the implementation of the models following the new /classes
-- [ ] change everywhere the implementation of Blocks, Transactions, etc.. following the new classes in /classes
+- [x] change everywhere the implementation of Blocks, Transactions, etc.. following the new classes in /classes
 - [x] implement propagation of blocks
   - [x] implement a `PUT /block` API which will be called from other peers when they want to propagate their blocks.
     - [x] implement the validation of a block middleware, which includes:

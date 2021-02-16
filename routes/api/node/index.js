@@ -4,8 +4,6 @@ const nodeController = require("../../../controllers/nodeController");
 
 const blockController = require("../../../controllers/blockController");
 
-const blockchainController = require("../../../controllers/blockchainController");
-
 const router = express.Router();
 
 module.exports = () => {
