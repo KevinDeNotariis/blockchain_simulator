@@ -76,7 +76,7 @@ From the home page you can navigate to `/blockchain` by clicking on the `Blockch
 ## APIs
 
 <div style="font-weight:900; font-size: 20px; text-align: center">
-   <a href="./API_doc.md">See the documentation API_doc for the complete list of APIs</a> (Still under construction)
+   <a href="./API_doc.md">See the documentation API_doc for the complete list of APIs</a>
 </div>
 
 ### Mining
@@ -85,19 +85,22 @@ Now that everything is set, you can mine a block in the blockchain. What you hav
 
 1. Take some transactions from the `transactions` collection of `blockchainDB` database.
 
-1. Construct a Block with the above transactions.
+1. Construct a Block with the above transactions, plus a first transaction from the coinbase to the address of the mining node with the mining reward.
 
-1. Start mining it, namely searching for a `nonce` in such a way that the `hash` of the Block is less than the `target` (set to 2^(240)).
+1. Start mining it, namely start searching for a `nonce` in such a way that the `hash` of the Block is less than the `difficulty` (specified in the `config.js` file and on each block header).
 
 1. Once mined, the bock will be added to the blockchain, namely to the `blocks` collection of the `blockchainDB` database.
 
-1. The block will be propagated to the other peers, in this case to the other two nodes, namely to `http://localhost:3002` and `http://localhost:3003`.
+1. The block will be propagated to the other peers, in this case to the other two nodes, namely to `http://localhost:3002` and `http://localhost:3003`, by making a call to `PUT /api/block` for each and every one of the available peers.
 
-1. The receiving nodes, upon receving the Block, will validate it:
+1. The receiving nodes, upon receving the Block, will validate it (see the API `PUT /api/mine` [here](API_doc.md)):
    1. Does this node already have the block?
+   1. Does the `hash` satisfy the difficulty constraint?
    1. Does the `previous_block` pointed by this Block exist?
-   1. Does the `hash` satisfy the difficulty obstacle?
-   1. Are the transactions in the Block valid?
+   1. Is the `previous_block` hash actually associated to the last block?
+   1. Is the first transaction in the body of the block a `coinbase` transaction for the mining reward?
+   1. Is the amount of this first transaction the correct one?
+   1. Are the transactions in the Block valid? (This will call, for each transaciton, `GET /api/transaction/validation/partial` to validate the transaction)
 1. Once validated, the receiver nodes will add this Block to their blockchain and propagate it to their peers.
 
 ### Generate Transactions
@@ -125,7 +128,7 @@ this API will do the following:
 
 1. Propagate the transactions to its peers. These will:
 
-   1. Validate the transaction received, namely check if the signature is valid and if they already have this transaction.
+   1. Validate the transaction received --> call `GET /api/transaction/validation/complete` (which can be inspected [here](API_doc.md))
    1. Save the transaction in their `transactions` collection of their blockchain database.
    1. Propagate the transaction to their peers.
 
