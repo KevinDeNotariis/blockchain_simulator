@@ -51,7 +51,7 @@ Click the `Set Up` button, what it will do is the following:
 
 1. Check whether the node has been already set up;
 1. Clear the database;
-1. Add the genesis block;
+1. Create and save the genesis block;
 1. Generate a number of users specified in the `config.js` file (100 at the moment);
 1. Create 3 transactions (equals to the number of nodes) from the `coinbase` address to the addresses of these three nodes (which will be mining nodes), where the amount of each one of these transactions is the `initial_money` in `config.js` divided by the number of nodes (3);
 1. Create a block containing these 3 transactions and mine it;

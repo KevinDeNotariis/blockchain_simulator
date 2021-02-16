@@ -4,14 +4,15 @@ const router = express.Router();
 
 const setUpController = require("../../../controllers/setUpController");
 
-const blockchainController = require("../../../controllers/blockchainController");
+const blockController = require("../../../controllers/blockController");
 
 module.exports = () => {
   router.get(
     "/",
     setUpController.check,
     setUpController.clear_dbs,
-    blockchainController.add_genesis_block,
+    blockController.get_genesis_block,
+    blockController.save_genesis_block,
     setUpController.generate_users,
     setUpController.generate_transactions,
     setUpController.mine_first_blocks,

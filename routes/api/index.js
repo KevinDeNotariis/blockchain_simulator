@@ -3,7 +3,6 @@ const express = require("express");
 const nodeRoute = require("./node");
 const transactionRoute = require("./transaction");
 const blockRoute = require("./block");
-const blockchainRoute = require("./blockchain");
 const userRoute = require("./user");
 const peerRoute = require("./peer");
 
@@ -35,7 +34,6 @@ module.exports = () => {
   router.use("/node", nodeRoute());
   router.use("/transaction", transactionRoute());
   router.use("/block", blockRoute());
-  router.use("/blockchain", blockchainRoute());
   router.use("/user", userRoute());
   router.use("/peer", peerRoute());
   router.use("/set_up", setUpRoute());

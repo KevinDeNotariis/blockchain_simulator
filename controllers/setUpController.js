@@ -86,17 +86,13 @@ const generate_transactions = async (req, res, next) => {
 
   block.init(
     1,
-    req.app.locals.previous_hash,
+    await dbManagement.get_previous_hash(),
     configuration.config.setUp.initial_difficulty,
     txs
   );
 
   // mine the block
   console.log(block.mine());
-
-  // update global variables
-  req.app.locals.max_id = 1;
-  req.app.locals.previous_hash = block.hash();
 
   // save the block in the database, with the hash and id
   const block_db = new Block(block);
@@ -145,8 +141,8 @@ const mine_first_blocks = async (req, res, next) => {
     const block = new BlockClass();
     console.log(current_txs.map((elem) => elem.hash()));
     block.init(
-      req.app.locals.max_id + 1,
-      req.app.locals.previous_hash,
+      (await dbManagement.get_max_id()) + 1,
+      await dbManagement.get_previous_hash(),
       configuration.config.setUp.initial_difficulty,
       current_txs
     );
@@ -160,9 +156,6 @@ const mine_first_blocks = async (req, res, next) => {
       block_id: block.header.id,
     });
     await hash_db.save();
-
-    req.app.locals.max_id = block.header.id;
-    req.app.locals.previous_hash = block.hash();
   }
   next();
 };
@@ -235,10 +228,6 @@ const add_blocks = async (req, res) => {
 const add_hashes = async (req, res) => {
   console.log("Adding hashes");
   await Hash.insertMany(req.body.hashes);
-  const last = await Hash.find({}).sort({ block_id: -1 }).limit(1);
-
-  req.app.locals.previous_hash = last[0].block_hash;
-  req.app.locals.max_id = last[0].block_id;
 
   return res.status(200).json({ message: "Hashes added" });
 };

@@ -14,6 +14,8 @@
   - [x] get balance from validated transactions.
   - [x] check for transactions in the pool.
 - [ ] implement the priority system for transactions in the pool
+  - [ ] method returning the priority (might just be the timestamp)
+  - [ ] when creating a block to mine, order transactions by priority
 - [ ] implement different types of nodes, those that may not require the full blockchain, but still can verify transactions (thanks to the Merkle tree structure)
 - [ ] check and update the availability of peers when a node wakes up
 - [x] implement the reward for mining a block as a transaction (the first) from the coinbase to the miner for a fixed value of money:
@@ -23,13 +25,16 @@
   - [x] check that the amount of the transaction from the coinbase to the miner is the right amount
     - [x] implement a fixed or variable amount to give as a reward to miners
 - [ ] implement the log in the front-end
-- [ ] when a node receive a valid block, it needs to take the transactions validated in the block out from their transactions collection
+- [x] when a node receive a valid block, it needs to take the transactions validated in the block out from their transactions collection
+- [x] implement the removal of transactions from the pool after the block was mined
+- [ ] implement the possiblity of the API `POST /api/node/mine` to be stopped (if another peer has mined a block before them).
 - [ ] when fetching blocks, the node will try to fetch from the peer with the longest blockchain
 - [ ] implement the possibility for the client to click on a user and see the list of its transactions, balance, etc.. (like a wallet)
 - [ ] implement the fetching of transactions, blocks, etc.. from peers when a node wakes up
 - [ ] implement the forking of the blockchain, namely:
   - [ ] the possibility of having more blocks with the same id (aka height)
   - [ ] the fact that a block may arrive before the previous one --> orphan blocks
+  - [ ] restore transactions in a block which was mined before when substituted
 - [ ] implement an object - PropagateData - that stores the peers it has already visited, in order to not send it to the same peers all over again.
 - [x] refactor routes:
   - [x] refactor transaction routes
@@ -46,7 +51,7 @@
   - [x] blockchain
   - [x] node
 - [ ] implement communication protocols for transactions and blocks propagation. When a peer wants to send a block, it may just send the header, the receiver will check it, and if it does not already have it and everything is fine, then the sender may send the whole block.
-- [ ] remove max_id and previous_hash from app.locals everywhere (and user db functions to extract them when necessary)
+- [x] remove max_id and previous_hash from app.locals everywhere (and user db functions to extract them when necessary)
 
 - [ ] IMPLEMENT SECURITY MEASURES
   - [ ] input validation and sanitisation

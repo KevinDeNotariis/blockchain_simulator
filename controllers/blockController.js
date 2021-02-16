@@ -2,8 +2,10 @@ const mongoose = require("mongoose");
 
 const Hash = mongoose.model("Hash");
 const Block = mongoose.model("Block");
+const Transaction = mongoose.model("Transaction");
 
 const BlockClass = require("../classes/Block");
+const TransactionClass = require("../classes/Transaction");
 
 const functions = require("../utilities/functions");
 const dbManagement = require("../utilities/dbManagement");
@@ -181,6 +183,19 @@ const save_block = async (req, res, next) => {
 
   console.log("  --> Hash saved");
 
+  console.log(
+    "  - Removing transactions in the block from the transaction pool"
+  );
+
+  for (let i in block.transactions) {
+    const tx = await Transaction.findOne({
+      id: block.transactions[i].id,
+    });
+    if (tx) {
+      await Transaction.deleteOne(tx);
+    }
+  }
+
   next();
 };
 
@@ -222,6 +237,48 @@ const get_block_by_id = async (req, res, next) => {
   next();
 };
 
+const get_genesis_block = async (req, res, next) => {
+  const genesis_transaction = new TransactionClass(
+    configuration.config.coinbase.public,
+    configuration.config.coinbase.public,
+    configuration.config.setUp.initial_money
+  );
+
+  genesis_transaction.sign(configuration.config.coinbase.private);
+
+  const genesis_block = new BlockClass();
+
+  genesis_block.init(
+    0,
+    configuration.config.genesis_block.previous_hash,
+    configuration.config.setUp.initial_difficulty,
+    [genesis_transaction]
+  );
+
+  genesis_block.mine();
+
+  req.body.block = genesis_block;
+
+  next();
+};
+
+const save_genesis_block = async (req, res, next) => {
+  const block = new Block(req.body.block);
+
+  await block.save();
+
+  const hash = new Hash({
+    block_id: block.header.id,
+    block_hash: block.hash(),
+  });
+
+  await hash.save();
+
+  delete req.body.block;
+
+  next();
+};
+
 module.exports = {
   checks,
   create_block,
@@ -230,4 +287,6 @@ module.exports = {
   propagate_block,
   get_last,
   get_block_by_id,
+  get_genesis_block,
+  save_genesis_block,
 };

@@ -45,6 +45,9 @@ const config = {
   },
   max_txs_in_block: 6,
   mining_reward: 100,
+  genesis_block: {
+    previous_hash: "00000000000000000000000",
+  },
 };
 
 module.exports = { config };
