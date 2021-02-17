@@ -60,7 +60,7 @@ const initial_setup = async () => {
     else if (hashes.length === 0) console.log("No blocks yet");
     else {
       const last = await hashes.reduce((a, b) => {
-        return Math.max(a.block_id, b.block_id);
+        return Math.max(a.block_id, b.block_id) === a.block_id ? a : b;
       });
       console.log(`  max_id = ${last.block_id}`);
       console.log(`  previous_hash = ${last.block_hash}`);

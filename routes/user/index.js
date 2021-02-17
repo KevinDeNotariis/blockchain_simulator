@@ -2,15 +2,13 @@ const express = require("express");
 
 const userController = require("../../controllers/userController");
 
-const transactionController = require("../../controllers/transactionController");
-
-const { get_users } = require("../../utilities/dbManagement");
+const dbManagement = require("../../utilities/dbManagement");
 
 const router = express.Router();
 
 module.exports = () => {
   router.get("/", async (req, res) => {
-    const users = await get_users();
+    const users = await dbManagement.get_users();
 
     return res.render("index", {
       title: "Users",
@@ -18,6 +16,17 @@ module.exports = () => {
       styles: ["user"],
       script: "user",
       users: users,
+    });
+  });
+
+  router.get("/:public_key", userController.get_user_by_id, (req, res) => {
+    const user_info = req.body.user_info;
+    return res.render("index", {
+      title: "User Info",
+      page: "user/info",
+      styles: ["user_info"],
+      script: "user_info",
+      user_info: user_info,
     });
   });
 

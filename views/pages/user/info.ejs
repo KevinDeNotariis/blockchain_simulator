@@ -1,0 +1,36 @@
+<div class="root">
+  <div class="title">
+    <h2>User <u><%=user_info.user.public_key%></u></h2>
+  </div>
+
+  <div class="content">
+    <div class="balance">
+      <p>
+        Balance validated: <%=user_info.balance_validated.gained -
+        user_info.balance_validated.spent %>
+      </p>
+      <p>
+        Money spent still to be validated: <%=user_info.balance_pool.spent%>
+      </p>
+      <p>
+        Money gained still to be validated: <%=user_info.balance_pool.gained%>
+      </p>
+    </div>
+    <div class="transactions">
+      <!--prettier-ignore-->
+      <div class="validated-transactions">
+        <h3>Validated Transactions</h3>
+        <% user_info.transactions_validated.map(tx => {%>
+          <p><%=tx.sender%> : <%=tx.amount%> ---> <%=tx.receiver%></p>
+          <% }) %>
+        </div>
+      <!--prettier-ignore-->
+      <div class="pool-transactions">
+        <h3>Transactions in the Pool</h3>
+        <% user_info.transactions_pool.map(tx => {%>
+          <p><%=tx.sender%> : <%=tx.amount%> ---> <%=tx.receiver%></p>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>

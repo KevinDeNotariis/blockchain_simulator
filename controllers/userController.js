@@ -136,9 +136,40 @@ const get_balance = async (req, res, next) => {
   });
 };
 
+const get_user_by_id = async (req, res, next) => {
+  const public_key = req.params.public_key;
+
+  const user = await User.findOne({ public_key: public_key });
+
+  const transactions_validated = await functions.get_transactions_from_user_validated(
+    public_key
+  );
+
+  const transactions_pool = await functions.get_transactions_from_user_pool(
+    public_key
+  );
+
+  const balance_validated = await functions.get_balance_from_user_validated(
+    public_key
+  );
+
+  const balance_pool = await functions.get_balance_from_user_in_pool(
+    public_key
+  );
+  req.body.user_info = {};
+  req.body.user_info.user = user;
+  req.body.user_info.transactions_validated = transactions_validated;
+  req.body.user_info.transactions_pool = transactions_pool;
+  req.body.user_info.balance_validated = balance_validated;
+  req.body.user_info.balance_pool = balance_pool;
+
+  next();
+};
+
 module.exports = {
   generate_keys,
   add_bunch_of_users,
   generate_transaction,
   get_balance,
+  get_user_by_id,
 };

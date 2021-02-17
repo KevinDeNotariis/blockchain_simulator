@@ -38,7 +38,7 @@ const create_txs_pool = async (req, res, next) => {
       i--;
     }
   }
-  if (txs_pool.length === 0) {
+  if (txs_pool.length === 1) {
     return res.status(400).json({ message: "No transactions in the pool" });
   }
   req.body.transactions = txs_pool;

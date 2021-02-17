@@ -1,6 +1,7 @@
 <% users.map(user =>{ %>
 <tr>
+  <% const link = "/user/"+user.public_key %>
+  <td><a href="<%= link %>"><%= user.public_key %></a></td>
   <td><%= user.private_key %></td>
-  <td><%= user.public_key %></td>
 </tr>
 <% }) %>

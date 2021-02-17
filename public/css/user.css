@@ -12,9 +12,28 @@ thead th {
 td {
   border-right: 2px solid black;
   text-align: center;
-  padding: 5px;
+  padding: 10px;
 }
 
 tr td:last-child {
   border: none;
+}
+
+td a {
+  text-decoration: none;
+  color: inherit;
+  border: solid 1px blue;
+  border-radius: 5px;
+  padding: 5px;
+  margin: 5px;
+}
+
+td a:hover {
+  background-color: blue;
+  color: white;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+td a:visited {
+  color: inherit;
 }

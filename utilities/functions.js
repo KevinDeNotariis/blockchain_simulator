@@ -430,6 +430,42 @@ const partial_verify_transaction = async (address, port, transaction) => {
   });
 };
 
+const get_transactions_from_user_validated = async (user_pub_key) => {
+  return new Promise(async (done) => {
+    const blocks = await Block.find({
+      $or: [
+        { "transactions.sender": user_pub_key },
+        { "transactions.receiver": user_pub_key },
+      ],
+    });
+
+    let transactions = [];
+    for (let i in blocks) {
+      for (let j in blocks[i].transactions) {
+        if (
+          blocks[i].transactions[j].sender === user_pub_key ||
+          blocks[i].transactions[j].receiver === user_pub_key
+        ) {
+          let tx = blocks[i].transactions[j].toObject();
+          tx.block_id = blocks[i].header.id;
+          transactions.push(tx);
+        }
+      }
+    }
+    done(transactions);
+  });
+};
+
+const get_transactions_from_user_pool = async (user_pub_key) => {
+  return new Promise(async (done) => {
+    done(
+      await Transaction.find({
+        $or: [{ sender: user_pub_key }, { receiver: user_pub_key }],
+      })
+    );
+  });
+};
+
 module.exports = {
   propagate_to_peers,
   propagate_to_peers_wait_res,
@@ -443,4 +479,6 @@ module.exports = {
   get_balance_from_user_in_pool,
   verify_keys,
   partial_verify_transaction,
+  get_transactions_from_user_validated,
+  get_transactions_from_user_pool,
 };
