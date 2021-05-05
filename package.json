@@ -4,6 +4,7 @@
   "description": "Simulation of a Blockchain",
   "main": "server.js",
   "scripts": {
+    "dev": "nodemon server",
     "dev1": "nodemon app 0",
     "dev2": "nodemon app 1",
     "dev3": "nodemon app 2",

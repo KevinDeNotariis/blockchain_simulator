@@ -103,7 +103,7 @@ const generate_transaction = async (req, res, next) => {
   if (!transaction.sign(req.body.transaction_gen.sender_private_key)) {
     console.log("Error in signing the transaction");
     return res
-      .stastus(400)
+      .status(400)
       .json({ message: "Error in signing the transaction" });
   }
 
@@ -138,6 +138,8 @@ const get_user_by_id = async (req, res, next) => {
   const public_key = req.params.public_key;
 
   const user = await User.findOne({ public_key: public_key });
+
+  if (!user) next();
 
   const transactions_validated = await functions.get_transactions_from_user_validated(
     public_key

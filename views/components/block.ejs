@@ -49,7 +49,9 @@
         <% } else {%>
         <p class="block-tx-label"></p>
         <% } %>
-        <p class="block-tx-value"><%= blocks[i].transactions[j].hash() %></p>
+        <button class="block-tx-value" id="<%=blocks[i].transactions[j].id%>">
+          <%= blocks[i].transactions[j].hash() %>
+        </button>
         <% } %>
       </div>
     </div>

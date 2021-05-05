@@ -21,5 +21,17 @@ module.exports = () => {
     });
   });
 
+  router.get("/:transactionId", async (req, res) => {
+    const transaction_info = await dbManagement.get_transaction_by_id_info(
+      req.params.transactionId
+    );
+    return res.render("index", {
+      title: "Transaction Info",
+      page: "transaction/info",
+      styles: ["transaction_info"],
+      transaction_info: transaction_info,
+    });
+  });
+
   return router;
 };

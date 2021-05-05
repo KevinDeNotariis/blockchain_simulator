@@ -99,3 +99,10 @@ function compute_hash_of_every_block(elem) {
     }
   });
 }
+
+$(".block-tx-value").on("click", function (event) {
+  event.preventDefault();
+  const transactionId = $(this).attr("id");
+
+  window.location.href = `/transaction/${transactionId}`;
+});

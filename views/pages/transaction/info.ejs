@@ -1,0 +1,16 @@
+<div class="root">
+  <h3>Transaction <%=transaction_info.id%></h1>
+  <div class="container">
+    <% const link_sender = "/user/"+transaction_info.sender %>
+    <% const link_receiver = "/user/"+transaction_info.receiver %>
+    <p>Sender: <a href="<%= link_sender %>"> <%=transaction_info.sender%></a></p>
+    <p>Receiver: <a href="<%= link_receiver %>"> <%=transaction_info.receiver%></a></p>
+    <p>Amount: <%=transaction_info.amount%></p>
+    <p>Timestamp: <%=transaction_info.timestamp%></p>
+    <% if (transaction_info.validated) { %>
+    <p>Block id: <%=transaction_info.blockId%></p>
+    <%} else {%>
+    <p>Transaction is in the pool</p>
+    <%}%>
+  </div>
+</div>

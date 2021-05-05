@@ -15,6 +15,7 @@ const TransactionClass = require("../classes/Transaction");
 const BlockClass = require("../classes/Block");
 
 const isReachable = require("is-reachable");
+const user = require("../routes/user");
 
 const check = (req, res, next) => {
   if (req.app.locals.config.setup)
@@ -29,7 +30,7 @@ const clear_dbs = async (req, res, next) => {
   next();
 };
 
-const generate_users = (req, res, next) => {
+const generate_users = async (req, res, next) => {
   const data = qs.stringify(
     JSON.parse(
       JSON.stringify({
@@ -59,6 +60,16 @@ const generate_users = (req, res, next) => {
   });
   request.write(data);
   request.end();
+
+  // Save the first peers
+  for (let peer of configuration.config.peers) {
+    const user = new User({
+      public_key: peer.public_key,
+      private_key: peer.private_key,
+      secret_words: "No secrets",
+    });
+    await user.save();
+  }
 };
 
 const generate_transactions = async (req, res, next) => {

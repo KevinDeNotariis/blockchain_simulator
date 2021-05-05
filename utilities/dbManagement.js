@@ -81,6 +81,49 @@ const get_previous_hash = async () => {
   });
 };
 
+const get_transaction_by_id = async (transactionId) => {
+  return new Promise(async (done) => {
+    const block = await Block.findOne({ "transactions.id": transactionId });
+    if (block) {
+      const tx = block.transactions.find((tx) => (tx.id = transactionId));
+      tx.validate = true;
+      done(tx);
+    }
+    const tx = await Transaction.findOne({ id: transactionId });
+    if (tx) {
+      tx.validated = false;
+      done(tx);
+    }
+    done({});
+  });
+};
+
+const get_transaction_by_id_info = async (transactionId) => {
+  return new Promise(async (done) => {
+    const block = await Block.findOne({ "transactions.id": transactionId });
+    if (block) {
+      const tx = block.transactions.find((tx) => (tx.id = transactionId));
+      const tx_info = {
+        sender: tx.sender,
+        receiver: tx.receiver,
+        amount: tx.amount,
+        id: tx.id,
+        timestamp: tx.timestamp,
+        blockId: block.header.id,
+        validated: false,
+      };
+      done(tx_info);
+    }
+    let tx = await Transaction.findOne({ id: transactionId });
+    if (tx) {
+      tx = tx.toObject();
+      delete tx.signature;
+      tx.validate = false;
+      done(tx);
+    }
+  });
+};
+
 module.exports = {
   clear_db,
   get_blockchain,
@@ -90,4 +133,6 @@ module.exports = {
   get_users,
   get_max_id,
   get_previous_hash,
+  get_transaction_by_id,
+  get_transaction_by_id_info,
 };
