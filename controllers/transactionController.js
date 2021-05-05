@@ -1,15 +1,13 @@
 const crypto = require("crypto");
-const mongoose = require("mongoose");
 const qs = require("qs");
 const http = require("http");
 
 const functions = require("../utilities/functions");
 const dbManagement = require("../utilities/dbManagement");
 
-const Transaction = mongoose.model("Transaction");
-const User = mongoose.model("User");
-const Peer = mongoose.model("Peer");
-const Block = mongoose.model("Block");
+const Transaction = require("../models/transactionModel");
+const User = require("../models/userModel");
+const Block = require("../models/blockModel");
 
 const TransactionClass = require("../classes/Transaction");
 const configuration = require("../config");

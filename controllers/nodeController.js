@@ -1,6 +1,4 @@
-const mongoose = require("mongoose");
-
-const Transaction = mongoose.model("Transaction");
+const Transaction = require("../models/transactionModel");
 
 const TransactionClass = require("../classes/Transaction");
 

@@ -1,12 +1,10 @@
 const isReachable = require("is-reachable");
 
-const mongoose = require("mongoose");
-
-const Block = mongoose.model("Block");
-const Transaction = mongoose.model("Transaction");
-const Peer = mongoose.model("Peer");
-const User = mongoose.model("User");
-const Hash = mongoose.model("Hash");
+const User = require("../models/userModel");
+const Transaction = require("../models/transactionModel");
+const Block = require("../models/blockModel");
+const Peer = require("../models/peerModel");
+const Hash = require("../models/hashModel");
 
 const clear_db = async () => {
   await Block.deleteMany({});
@@ -25,7 +23,7 @@ const get_peers = async () => {
   return new Promise(async (done) => {
     const peers = await Peer.find({});
 
-    await peers.map(async (peer) => {
+    peers.map(async (peer) => {
       peer.status = await isReachable(`${peer.address}:${peer.port}`);
 
       await Peer.updateOne(

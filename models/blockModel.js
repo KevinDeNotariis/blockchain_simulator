@@ -3,7 +3,7 @@ const sha256 = require("crypto-js/sha256");
 
 const Schema = mongoose.Schema;
 
-const TransactionSchema = require("./transactionModel");
+const TransactionSchema = require("../models/transactionModel").schema;
 
 const BlockHeaderSchema = new Schema({
   _id: false,
@@ -54,4 +54,4 @@ BlockSchema.methods.hash = function () {
   ).toString();
 };
 
-module.exports = BlockSchema;
+module.exports = new mongoose.model("Block", BlockSchema);

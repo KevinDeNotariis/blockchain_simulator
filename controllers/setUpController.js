@@ -1,12 +1,11 @@
 const http = require("http");
-const mongoose = require("mongoose");
 const qs = require("qs");
 
-const User = mongoose.model("User");
-const Transaction = mongoose.model("Transaction");
-const Block = mongoose.model("Block");
-const Peer = mongoose.model("Peer");
-const Hash = mongoose.model("Hash");
+const User = require("../models/userModel");
+const Transaction = require("../models/transactionModel");
+const Block = require("../models/blockModel");
+const Peer = require("../models/peerModel");
+const Hash = require("../models/hashModel");
 
 const dbManagement = require("../utilities/dbManagement");
 const functions = require("../utilities/functions");

@@ -1,5 +1,4 @@
-const mongoose = require("mongoose");
-const Peer = mongoose.model("Peer");
+const Peer = require("../models/peerModel");
 
 const isReachable = require("is-reachable");
 

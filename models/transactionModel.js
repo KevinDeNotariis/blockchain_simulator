@@ -62,4 +62,5 @@ TransactionSchema.methods.serialize = function () {
   return this.id + this.sender + this.receiver + String(this.amount);
 };
 
-module.exports = TransactionSchema;
+module.exports = new mongoose.model("Transaction", TransactionSchema);
+exports.schema = TransactionSchema;

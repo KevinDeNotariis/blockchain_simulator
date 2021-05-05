@@ -13,4 +13,4 @@ const HashSchema = new Schema({
   },
 });
 
-module.exports = HashSchema;
+module.exports = new mongoose.model("Hash", HashSchema);

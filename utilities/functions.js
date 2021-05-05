@@ -5,11 +5,9 @@ const qs = require("qs");
 const EdDSA = require("elliptic").eddsa;
 const ec = new EdDSA("ed25519");
 
-const mongoose = require("mongoose");
-
-const Peer = mongoose.model("Peer");
-const Block = mongoose.model("Block");
-const Transaction = mongoose.model("Transaction");
+const Peer = require("../models/peerModel");
+const Block = require("../models/blockModel");
+const Transaction = require("../models/transactionModel");
 
 const TransactionClass = require("../classes/Transaction");
 

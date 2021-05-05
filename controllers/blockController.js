@@ -1,8 +1,6 @@
-const mongoose = require("mongoose");
-
-const Hash = mongoose.model("Hash");
-const Block = mongoose.model("Block");
-const Transaction = mongoose.model("Transaction");
+const Hash = require("../models/hashModel");
+const Block = require("../models/blockModel");
+const Transaction = require("../models/transactionModel");
 
 const BlockClass = require("../classes/Block");
 const TransactionClass = require("../classes/Transaction");

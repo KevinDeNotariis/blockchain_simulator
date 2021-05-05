@@ -1,12 +1,10 @@
 const sha256 = require("crypto-js/sha256");
 const randomWords = require("random-words");
-const crypto = require("crypto");
-const mongoose = require("mongoose");
 
 const EdDSA = require("elliptic").eddsa;
 const ec = new EdDSA("ed25519");
 
-const User = mongoose.model("User");
+const User = require("../models/userModel");
 
 const TransactionClass = require("../classes/Transaction");
 

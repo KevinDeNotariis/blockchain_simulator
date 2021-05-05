@@ -9,4 +9,4 @@ const NodeSchema = new Schema({
   },
 });
 
-module.exports = NodeSchema;
+module.exports = new mongoose.model("Node", NodeSchema);

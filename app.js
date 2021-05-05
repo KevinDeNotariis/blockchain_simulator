@@ -1,12 +1,11 @@
 const express = require("express");
 const app = express();
 
-const bodyParser = require("body-parser");
 require("dotenv").config();
 
 //set the global variables
 const configuration = require("./config");
-app.locals.config = configuration.config.peers[1];
+app.locals.config = configuration.config.peers[process.argv[2]];
 console.log({ config: app.locals.config });
 
 const mongoose = require("mongoose");
@@ -15,18 +14,7 @@ mongoose.connect(`mongodb://localhost/${app.locals.config.db}`, {
   useUnifiedTopology: true,
 });
 
-const BlockSchema = require("./models/blockModel");
-const Block = mongoose.model("Block", BlockSchema);
-const TransactionSchema = require("./models/transactionModel");
-const Transaction = mongoose.model("Transaction", TransactionSchema);
-const NodeSchema = require("./models/nodeModel");
-const Node = mongoose.model("Node", NodeSchema);
-const UserSchema = require("./models/userModel");
-const User = mongoose.model("User", UserSchema);
-const HashSchema = require("./models/hashModel");
-const Hash = mongoose.model("Hash", HashSchema);
-const PeerSchema = require("./models/peerModel");
-const Peer = mongoose.model("Peer", PeerSchema);
+const Hash = require("./models/hashModel");
 
 const routes = require("./routes");
 const path = require("path");
@@ -41,8 +29,8 @@ app.use(
   express.static(path.join(__dirname, "node_modules/jquery/dist"))
 );
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/", routes());
 
@@ -59,8 +47,8 @@ const initial_setup = async () => {
     if (!hashes) console.log("No blocks yet");
     else if (hashes.length === 0) console.log("No blocks yet");
     else {
-      const last = await hashes.reduce((a, b) => {
-        return Math.max(a.block_id, b.block_id);
+      const last = hashes.reduce((a, b) => {
+        return Math.max(a.block_id, b.block_id) === a.block_id ? a : b;
       });
       console.log(`  max_id = ${last.block_id}`);
       console.log(`  previous_hash = ${last.block_hash}`);
