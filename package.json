@@ -4,15 +4,17 @@
   "description": "Simulation of a Blockchain",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js",
-    "dev2": "nodemon server2.js",
-    "dev3": "nodemon server3.js",
-    "test": "mocha --timeout 10000 --recursive"
+    "dev1": "nodemon app 0",
+    "dev2": "nodemon app 1",
+    "dev3": "nodemon app 2",
+    "test": "mocha --timeout 10000 --recursive",
+    "start1": "node app 0",
+    "start2": "node app 1",
+    "start3": "node app 2"
   },
   "author": "Kevin De Notariis",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.19.0",
     "chai-http": "^4.3.0",
     "crypto-js": "^4.0.0",
     "dotenv": "^8.2.0",

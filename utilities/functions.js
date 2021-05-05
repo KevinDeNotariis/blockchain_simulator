@@ -304,7 +304,7 @@ const get_money_gained_by_user_validated = async (user_pub_key) => {
     let gained = 0;
 
     if (as_receiver_blocks.length === 0) {
-      console.log("This user did not spend any money");
+      console.log("This user did not receive any money");
     } else {
       let received_txs = [];
       await as_receiver_blocks.map((block) => {

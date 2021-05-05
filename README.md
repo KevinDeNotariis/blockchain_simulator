@@ -22,7 +22,7 @@
 - Type
 
   ```
-  npm run dev
+  npm run dev1
   ```
 
   to start the first node (listening on `localhost:3001`);
