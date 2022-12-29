@@ -9,10 +9,6 @@ app.locals.config = configuration.config.peers[process.argv[2]];
 console.log({ config: app.locals.config });
 
 const mongoose = require("mongoose");
-mongoose.connect(`mongodb://localhost/${app.locals.config.db}`, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
 
 const Hash = require("./models/hashModel");
 
@@ -35,6 +31,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/", routes());
 
 app.listen(app.locals.config.port, async () => {
+  await mongoose.connect(`mongodb://127.0.0.1/${app.locals.config.db}`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
   await initial_setup();
   console.log(`Server listening on port ${app.locals.config.port}`);
 });
